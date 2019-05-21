@@ -37,6 +37,7 @@ def tokenise(string):
     ix = 0
     line_num = 1
     line_start = 0
+    text_indent = None
     last_token = None
     len_string = len(string)
     while ix < len_string:
@@ -47,6 +48,8 @@ def tokenise(string):
                 match = INDICATOR_REGEX.match(string, ix)
                 type = 'INDICATOR'
                 value = match.group()
+                if last_token.type == 'INDENT' and value in ('|', ''):
+                    text_indent = last_token.value
             elif last_token.type == 'INDICATOR' and last_token.value in ('|', '/', '//'):
                 match = TEXT_REGEX.match(string, ix)
                 type = 'TEXT'
@@ -55,7 +58,13 @@ def tokenise(string):
             match = TOKEN_REGEX.match(string, ix)
             type = match.lastgroup
             value = match.group()
-            if type == 'SEPARATOR' and value == ':':
+            if type == 'INDENT':
+                if text_indent is not None:
+                    if len(value) > len(text_indent):
+                        value = text_indent
+                    else:
+                        text_indent = None
+            elif type == 'SEPARATOR' and value == ':':
                 if not brackets:
                     type = 'INLINE'
             elif type == 'LBRACKET':
