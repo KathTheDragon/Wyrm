@@ -16,7 +16,7 @@ TOKENS = {
     'UNKNOWN': r'.'
 }
 TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
-INDICATOR_REGEX = re.compile(r'([|/%-=:]|//) ?|')
+INDICATOR_REGEX = re.compile(r'([|/%\-=:]|//) ?|')
 TEXT_REGEX = re.compile(r'.*$', flags=re.M)
 
 ## Exceptions
