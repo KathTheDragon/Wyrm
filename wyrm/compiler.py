@@ -9,7 +9,7 @@ TOKENS = {
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
     'IDENTIFIER': r'[a-zA-Z_]\w*',
-    'STRING': r'\".*[^\\]\"|\'.*[^\\]\'|[\'\"]{2}',
+    'STRING': r'\".*?[^\\]\"|\'.*?[^\\]\'|[\'\"]{2}',
     'NUMBER': r'\d+\.?\d*',
     'WHITESPACE': r' +',
     'NEWLINE': r'\n',
