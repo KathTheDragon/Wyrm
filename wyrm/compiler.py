@@ -5,7 +5,7 @@ from dataclasses import dataclass
 TOKENS = {
     'INDENT': r'^ *',
     'OPERATOR': r'[#.^~]|[+\-=!%@&|]=?|[*/<>]{1,2}=?',
-    'SEPARATOR': r'[,:]',
+    'SEPARATOR': r'[,:] ?',
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
     'IDENTIFIER': r'[a-zA-Z_]\w*',
@@ -64,7 +64,7 @@ def tokenise(string):
                         value = text_indent
                     else:
                         text_indent = None
-            elif type == 'SEPARATOR' and value == ':':
+            elif type == 'SEPARATOR' and value.startswith(':'):
                 if not brackets:
                     type = 'INLINE'
             elif type == 'LBRACKET':
@@ -82,6 +82,8 @@ def tokenise(string):
         ix += len(value)
         if type == 'INDICATOR':
             value = value.strip() or '|'
+        elif type in ('INLINE', 'SEPARATOR'):
+            value = value.strip()
         elif type == 'WHITESPACE':
             continue
         elif type == 'NEWLINE':
