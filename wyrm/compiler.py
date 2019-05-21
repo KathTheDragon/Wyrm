@@ -46,7 +46,7 @@ def tokenise(string):
             if last_token.type in ('INDENT', 'INLINE'):
                 match = INDICATOR_REGEX.match(string, ix)
                 type = 'INDICATOR'
-                value = match.group(1) or '|'
+                value = match.group()
             elif last_token.type == 'INDICATOR' and last_token.value in ('|', '/', '//'):
                 match = TEXT_REGEX.match(string, ix)
                 type = 'TEXT'
@@ -70,8 +70,10 @@ def tokenise(string):
                 pass  # Might do something later with converting these to more specific tokens, like keywords, tag names, etc.
             elif type == 'UNKNOWN':
                 raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
-        ix += len(match.group())
-        if type == 'WHITESPACE':
+        ix += len(value)
+        if type == 'INDICATOR':
+            value = value.strip() or '|'
+        elif type == 'WHITESPACE':
             continue
         elif type == 'NEWLINE':
             line_num += 1
