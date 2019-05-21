@@ -33,18 +33,17 @@ class Token:
 
 ## Functions
 def tokenise(string):
-    tokens = []
     brackets = []
     ix = 0
     line_num = 1
     line_start = 0
     last_indicator = None
+    last_token = None
     len_string = len(string)
     while ix < len_string:
         match = None
         column = ix-line_start
-        if tokens:
-            last_token = tokens[-1]
+        if last_token is not None:
             if last_token.type in ('INDENT', 'INLINE'):
                 match = INDICATOR_REGEX.match(string, ix)
                 type = 'INDICATOR'
@@ -79,6 +78,6 @@ def tokenise(string):
             elif type == 'UNKNOWN':
                 raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
         token = Token(type, value, line_num, column)
-        tokens.append(token)
         ix += len(match.group())
-    return tokens
+        yield token
+        last_token = token
