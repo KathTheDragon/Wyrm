@@ -37,7 +37,6 @@ def tokenise(string):
     ix = 0
     line_num = 1
     line_start = 0
-    last_indicator = None
     last_token = None
     len_string = len(string)
     while ix < len_string:
@@ -48,7 +47,6 @@ def tokenise(string):
                 match = INDICATOR_REGEX.match(string, ix)
                 type = 'INDICATOR'
                 value = match.group(1) or '|'
-                last_indicator = value
             elif last_token.type == 'INDICATOR' and last_token.value in ('|', '/', '//'):
                 match = TEXT_REGEX.match(string, ix)
                 type = 'TEXT'
