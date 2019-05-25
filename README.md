@@ -89,6 +89,27 @@ Example:
 :block mainContent
 ```
 
+### `html`
+`html` is used to generate a doctype along with an `<html>` tag. The arguments to `html` are a little complex, as they come in two sets: arguments to select the correct doctype, and attributes to the `<html>` tag. The doctype selectors come first, and can be one of the following:
+- no argument given. This defaults to the default doctype given in the config, currently HTML 5.
+- `5`: HTML 5
+    - `<!doctype html>`
+- `4` or `4 strict`: HTML 4.01 Strict
+    - `<!doctype html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">`
+- `4 transitional`: HTML 4.01 Transitional
+    - `<!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">`
+- `4 frameset`: HTML 4.01 Frameset
+    - `<!doctype html PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">`
+- `1` or `1 strict`: XHTML 1.0 Strict
+    - `<!doctype html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">`
+- `1 transitional`: XHTML 1.0 Transitional
+    - `<!doctype html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">`
+- `1 frameset`: XHTML 1.0 Frameset
+    - `<!doctype html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">`
+- `1.1` XHTML 1.1
+    - `<!doctype html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">`
+Attributes are put after the doctype selectors, and follow the format used by other HTML tags, for which see there.
+
 ### `css`, `js`, `md`
 `css`, `js`, and `md` are used to include CSS, Javascript, and markdown respectively. Each command can either have a single argument, evaluating to a string giving the filename of a file to include (where the appropriate file extension is added automatically), or they can have a block with appropriately formatted plaintext. In the case of `css` and `js`, the commands will render to the appropriate HTML tags (`<link>` or `<style>` for `css`, and `<script>` for `js`), while `md` renders directly to HTML. Examples:
 ```
