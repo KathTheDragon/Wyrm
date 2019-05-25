@@ -63,7 +63,7 @@ class TextNode(Node):
     text: str = ''
 
     def render(self, *contexts):
-        from expression import String
+        from .expression import String
         return [String(self.text).format(*contexts)]
 
 @dataclass
@@ -86,8 +86,8 @@ class HTMLTagNode(NodeChildren):
     attributes: dict = field(default_factory=dict)
 
     def render(self, *contexts):
-        from htmltag import render
-        open, close = render(self.name, self.attributes, *contexts)
+        from .htmltag import render as renderTag
+        open, close = renderTag(self.name, self.attributes, *contexts)
         if close is None:  # Self-closing tag
             return [open]
         else:
@@ -98,7 +98,7 @@ class ExpressionNode(Node):
     value: str = ''
 
     def render(self, *contexts):
-        from expression import evaluate
+        from .expression import evaluate
         return [evaluate(self.value)]
 
 # Control nodes
@@ -118,7 +118,7 @@ class ConditionNode(NodeChildren):
     condition: str = ''
 
     def render(self, *contexts):
-        from expression import evaluate
+        from .expression import evaluate
         if evaluate(self.condition, *contexts):
             return super().render(*contexts)
         else:
@@ -130,7 +130,7 @@ class ForNode(NodeChildren):
     container: str = ''
 
     def render(self, *contexts):
-        from expression import evaluate
+        from .expression import evaluate
         lines = []
         container = evaluate(self.container, *contexts)
         if isinstance(self[0], Loop):
