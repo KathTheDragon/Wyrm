@@ -41,6 +41,28 @@ Wyrm uses indentation to define blocks, though the indentation level can be arbi
 ## Line indicators
 Wyrm uses the punctuation characters `: - = / %` to explicitly mark the various types of line. All line indicators may be optionally followed by a single space, to enhance readability.
 
+## Plaintext
+Any line that does not begin with one of the indicators is considered plaintext, and is mostly displayed without special modifications. There are several exceptions to this generalisation.
+
+Firstly, pairs of curly brackets `{...}` evaluate their contents as an expression, and interpolate the result. In order to display literal brackets, simply escape the opening bracket with a backslash: `\{`. An opening bracket without a closing bracket on the same line, however, never needs escaping. Examples:
+```
+This line displays the contents of the {variable}.
+This line does \{not}.
+Nor do these {lines
+}.
+```
+
+The second exception is that when there are multiple consecutive lines of text, the lines all use the indentation of the first one, even if the subsequent lines are indented further. Any non-text line will reset this behaviour. If the first line also needs leading whitespace, simply begin that line with a backslash `\`:
+```
+\    This line starts with four spaces.
+    So does this one.
+        But this one starts with eight.
+```
+Such leading backslashes are removed before displaying the line, meaning that in order to begin a text line with one of the reserved punctuation marks, simply precede them with a backslash as well:
+```
+\= This line renders literally =
+```
+
 ## Commands `:`
 Wyrm has a number of commands that do various things from inserting prewritten text (like the complex doctypes of HTML/XHTML/XML) to defining the inheritance structure of a template. The current commands are the following:
 
