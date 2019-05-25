@@ -5,3 +5,6 @@ class String:
 
     def format(self, *contexts):
         return self.string
+
+def evaluate(string, *contexts):
+    return string
