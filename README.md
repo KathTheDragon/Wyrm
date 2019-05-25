@@ -39,7 +39,7 @@ TBW
 Wyrm uses indentation to define blocks, though the indentation level can be arbitrary, and can differ from block to block. All that matters is that all lines that are supposed to be in the same block have the same indentation.
 
 ## Line indicators
-Wyrm uses the punctuation characters `: - = | / %` to explicitly mark the various types of line.
+Wyrm uses the punctuation characters `: - = / %` to explicitly mark the various types of line. All line indicators may be optionally followed by a single space, to enhance readability.
 
 ### Commands `:`
 Wyrm has a number of commands that do various things from inserting prewritten text (like the complex doctypes of HTML/XHTML/XML) to defining the inheritance structure of a template. The current commands are the following:
