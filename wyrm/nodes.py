@@ -130,14 +130,14 @@ class ForNode(NodeChildren):
         from .expression import evaluate
         lines = []
         container = evaluate(self.container, *contexts)
-        if isinstance(self[0], Loop):
-            loop = self[0]
-        else:
-            raise NodeError('for node must have a loop node as its first child')
-        if isinstance(self[-1], Empty):
-            empty = self[-1]
-        else:
-            empty = None
+        loop = empty = else_ = None
+        for child in self:
+            if isinstance(child, LoopNode):
+                loop = child
+            elif isinstance(child, EmptyNode):
+                empty = child
+            elif isinstance(child, ConditionNode):
+                else_ = child
         if container:
             length = len(container)
             if 'loop' in contexts[-1]:
@@ -147,7 +147,9 @@ class ForNode(NodeChildren):
             for i, item in enumerate(container):
                 context = dict(zip(self.vars, item))
                 context['loop'] = LoopVars(i, length, parent)
-                lines.extend(self[0].render(*contexts, context))
+                lines.extend(loop.render(*contexts, context))
+            if else_ is not None
+                lines.extend(else_.render(*contexts))
         elif empty is not None:
             return empty.render(*contexts)
         return lines
