@@ -180,7 +180,7 @@ class IncludeNode(NodeChildren):
         from .template import load_template
         from .expression import evaluate
         template = load_template(filename)  # Temporary call
-        context = {var: evaluate(value, *contexts) for var, value in vars.items()}
+        context = {var: evaluate(value, *contexts) for var, value in self.vars.items()}
         _blocks = {}
         for block in self:
             name = block.name
