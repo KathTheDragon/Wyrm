@@ -16,7 +16,7 @@ TOKENS = {
     'UNKNOWN': r'.'
 }
 TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
-INDICATOR_REGEX = re.compile(r'([|/%\-=:]|/!) ?|')
+INDICATOR_REGEX = re.compile(r'([/%\-=:]|/!)? ?')
 TEXT_REGEX = re.compile(r'.*$', flags=re.M)
 
 ## Exceptions
@@ -48,9 +48,9 @@ def tokenise(string):
                 match = INDICATOR_REGEX.match(string, ix)
                 type = 'INDICATOR'
                 value = match.group()
-                if last_token.type == 'INDENT' and value in ('| ', '|', ''):
+                if last_token.type == 'INDENT' and value == '':
                     text_indent = last_token.value
-            elif last_token.type == 'INDICATOR' and last_token.value in ('|', '/', '/!'):
+            elif last_token.type == 'INDICATOR' and last_token.value in ('', '/', '/!'):
                 match = TEXT_REGEX.match(string, ix)
                 type = 'TEXT'
                 value = match.group()
