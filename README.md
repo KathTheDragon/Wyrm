@@ -77,6 +77,7 @@ Wyrm has a number of commands that do various things from inserting prewritten t
 - a string giving the path to a template, when combined with one of the search directories defined in the engine config, and the file extension `.wyrm`;
 - an expression that evaluates in the current context to a string as specified above;
 - an expression that evaluates to a `Template` object
+
 It can also take a list of keyword arguments, of the form `{name}={value}`, introduced by the `with` or `with only` keyword. In the case of `with`, these keyword arguments are added to the current context and used to render the included template, and in the case of `with only`, the keyword arguments are the only context variables used to render the included template.
 Example:
 ```
