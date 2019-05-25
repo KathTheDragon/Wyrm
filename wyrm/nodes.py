@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, replace, InitVar
 from typing import Tuple, List, Optional
 
 ## Constants
-__all__ = ['RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'IncludeNode', 'BlockNode', 'RequireNode']
+__all__ = ['RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode']
 
 ## Exceptions
 class NodeError(Exception):
@@ -159,6 +159,15 @@ class LoopNode(NodeChildren):
 @dataclass
 class EmptyNode(NodeChildren):
     __slots__ = ()
+
+@dataclass
+class WithNode(NodeChildren):
+    vars: Dict[str, str] = field(default_factory=dict)
+
+    def render(self, *contexts):
+        from .expression import evaluate
+        context = {var: evaluate(value, *contexts) for var, value in self.vars.items()}
+        return super().render(*contexts, context)
 
 # Command nodes
 @dataclass
