@@ -48,7 +48,7 @@ def tokenise(string):
                 match = INDICATOR_REGEX.match(string, ix)
                 type = 'INDICATOR'
                 value = match.group()
-                if last_token.type == 'INDENT' and value in ('|', ''):
+                if last_token.type == 'INDENT' and value in ('| ', '|', ''):
                     text_indent = last_token.value
             elif last_token.type == 'INDICATOR' and last_token.value in ('|', '/', '//'):
                 match = TEXT_REGEX.match(string, ix)
