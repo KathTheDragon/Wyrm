@@ -22,7 +22,7 @@ TBW
         /! And comments that will!
 
         Plaintext is easy to write, but if you need to start a line with a reserved character...
-        | % You can make it explicit instead. %
+        \% You can escape it. %
         Text also supports interpolating {variables} with curly brackets.
 
         - if output
