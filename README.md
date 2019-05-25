@@ -119,3 +119,47 @@ Attributes are put after the doctype selectors, and follow the format used by ot
     # Embedded Markdown!
 ```
 
+## Control code `-`
+There are two systems of flow control in Wyrm, `if` and `for`. `if` allows blocks to be displayed conditionally, while `for` allows blocks to be displayed multiple times, once for each item in an iterable. There is also `with`, which allows binding expressions to local names.
+
+### `if`, `elif`, `else`
+`if`, `elif`, and `else` are used together exactly as in Python to construct complex conditional statements. `if` and `elif` take a single expression as an argument, which will be cast to a boolean if it doesn't evaluate as such. The normal Python treatment of objects is used for this, so empty strings, lists, tuples, and dictionaries are all considered `False`, for example.
+
+The initial `if` clause may be followed by zero or more `elif` clauses, which cannot occur otherwise, and finally by an optional `else` clause that takes no arguments.
+```
+- if expr1
+    Displayed if expr1 is truthy
+- elif expr2
+    Displayed if expr1 is falsey and expr2 is truthy
+- else
+    Displayed if neither expr1 or expr2 are truthy
+```
+
+### `for`, `empty`, `else`
+`for`, `empty`, and `else` are used together in a way that's similar to Python's for loops, but differs in the behaviour of the `else` clause. The initial `for` is followed by a comma-separated list of one or more variable names, the `in` keyword, and then an expression that must evaluate to an iterable object. As in Python, for each iteration of the loop the next item of the iterable will be taken and assigned to the variable name(s), with sequence unpacking if necessary. If sequence unpacking occurs, the length of the sequence must exactly match the number of variable names provided. Unlike Python, these variables are only available inside the loop.
+
+The for loop sets a number of additional variables inside the loop, giving information about the current state:
+- `loop.counter`: the current iteration of the loop (0-based)
+- `loop.counter1`: same as `loop.counter`, but 1-based
+- `loop.revcounter`: the number of iterations from the end of the loop (0-based)
+- `loop.revcounter1`: same as `loop.revcounter`, but 1-based
+- `loop.first`: `True` if this is the first iteration
+- `loop.last`: `True` if this is the last iteration
+- `loop.parent`: if this loop is nested inside another for loop, this denotes the `loop` variable of that outer loop. If there is no outer loop, this is `None`.
+
+After the `for` loop completes, the `else` clause, if provided, will be displayed after the results of the looping, but only if the iterable is not empty. If the iterable *is* empty, then the `empty` clause, if provided, will be displayed instead. Neither clause takes any arguments, and the order of the `else` and `empty` clauses doesn't matter.
+```
+- for name, age in authors
+    % li: {name} is {age} years old.
+- else
+    % p: These are all the authors
+- empty
+    % p: There are no authors
+```
+
+### `with`
+`with` is used to bind the results of expressions to names, making them available within the nested block. A typical use is to "cache" the result of some complex operation, such as a call to the database. `with` takes a comma-separated list of keyword arguments, exactly like the keyword arguments introduced after the `with` keyword in an `include` command.
+```
+- with wordlist=lang.word_set.all()
+```
+
