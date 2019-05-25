@@ -19,9 +19,6 @@ class Node:
     def render(self, *contexts):
         return []
 
-    def replace_blocks(self, blocks):
-        pass
-
 @dataclass
 class NodeChildren(Node):
     children: List[Node] = field(default_factory=list)  # I'd like to be able to remove this default so I can use __slots__ on all subclasses
@@ -167,20 +164,35 @@ class EmptyNode(NodeChildren):
 @dataclass
 class IncludeNode(NodeChildren):
     filename: str = ''
+    vars: Dict[str, str] = field(default_factory=dict)
+    limit_context: bool = False
 
     def render(self, *contexts):
-        pass  # Will come back to this, this is complex and needs a lot of infrastructure
-        # This works as follows:
-        # - loads the specified template
-        # - recursively searches the included template for Block and Include nodes
-        # -- for each Block node found, it checks the block's name, and if that's the name of a child block of this Include node, replaces the block in the included template with the child node
-        # -- for each Include node found, repeat this process. The blocks used are not only the children of the original Include, but each new Include encountered down the chain
-        # - once the inclusions and blocks are fully evaluated, the included template is rendered, and the result returned
-        # In particular, this cannot call .render on the included nodes until the final step
+        from .template import load_template
+        from .expression import evaluate
+        template = load_template(filename)  # Temporary call
+        context = {var: evaluate(value, *contexts) for var, value in vars.items()}
+        _blocks = {}
+        for block in self:
+            name = block.name
+            _blocks[name] = super(BlockNode, block).render(*contexts)
+        context['_blocks'] = _blocks
+        if limit_context:
+            return template.render(context)
+        else:
+            return template.render(*contexts, context)
 
 @dataclass
 class BlockNode(NodeChildren):
     name: str = ''
+
+    def render(self, *contexts):
+        for context in contexts:
+            if '_blocks' in context:
+                blocks = context['_blocks']
+                if self.name in blocks:
+                    return blocks[self.name].render(*contexts)
+        return super().render(*contexts)
 
 @dataclass
 class RequireNode(Node):
