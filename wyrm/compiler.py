@@ -48,8 +48,6 @@ def tokenise(string):
                 match = INDICATOR_REGEX.match(string, ix)
                 type = 'INDICATOR'
                 value = match.group()
-                if last_token.type == 'INDENT' and value == '':
-                    text_indent = last_token.value
             elif last_token.type == 'INDICATOR' and last_token.value in ('', '/', '/!'):
                 match = TEXT_REGEX.match(string, ix)
                 type = 'TEXT'
@@ -58,27 +56,29 @@ def tokenise(string):
             match = TOKEN_REGEX.match(string, ix)
             type = match.lastgroup
             value = match.group()
-            if type == 'INDENT':
-                if text_indent is not None:
-                    if len(value) > len(text_indent):
-                        value = text_indent
-                    else:
-                        text_indent = None
-            elif type == 'SEPARATOR' and value.startswith(':'):
-                if not brackets:
-                    type = 'INLINE'
-            elif type == 'LBRACKET':
-                brackets.append(value)
-            elif type == 'RBRACKET':
-                if not brackets:
-                    raise CompilerError(f'unmatched bracket: `{value}` @ {line_num}:{column}')
-                bracket = brackets.pop()
-                if bracket+value not in ('()', '[]', '{}'):
-                    raise CompilerError(f'mismatched brackets: `{value}` @ {line_num}:{column}')
-            elif type == 'IDENTIFIER':
-                pass  # Might do something later with converting these to more specific tokens, like keywords, tag names, etc.
-            elif type == 'UNKNOWN':
-                raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
+        if type == 'INDENT':
+            if text_indent is not None:
+                if len(value) > len(text_indent):
+                    value = text_indent
+                else:
+                    text_indent = None
+        elif type == 'INDICATOR' and last_token.type == 'INDENT' and value == '':
+            text_indent = last_token.value
+        elif type == 'SEPARATOR' and value.startswith(':'):
+            if not brackets:
+                type = 'INLINE'
+        elif type == 'LBRACKET':
+            brackets.append(value)
+        elif type == 'RBRACKET':
+            if not brackets:
+                raise CompilerError(f'unmatched bracket: `{value}` @ {line_num}:{column}')
+            bracket = brackets.pop()
+            if bracket+value not in ('()', '[]', '{}'):
+                raise CompilerError(f'mismatched brackets: `{value}` @ {line_num}:{column}')
+        elif type == 'IDENTIFIER':
+            pass  # Might do something later with converting these to more specific tokens, like keywords, tag names, etc.
+        elif type == 'UNKNOWN':
+            raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
         ix += len(value)
         if type == 'INDICATOR':
             value = value.strip() or '|'
