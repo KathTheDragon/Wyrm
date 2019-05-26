@@ -78,9 +78,8 @@ def tokenise(string):
             pass  # Might do something later with converting these to more specific tokens, like keywords, tag names, etc.
         elif type == 'UNKNOWN':
             raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
-        token = Token(type, value, line_num, column)
-        yield token
+        last_token = Token(type, value, line_num, column)
+        yield last_token
         if type == 'NEWLINE':
             line_num += 1
             line_start = ix
-        last_token = token
