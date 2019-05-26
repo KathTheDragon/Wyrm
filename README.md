@@ -67,7 +67,7 @@ Such leading backslashes are removed before displaying the line, meaning that in
 Wyrm has a number of commands that do various things from inserting prewritten text (like the complex doctypes of HTML/XHTML/XML) to defining the inheritance structure of a template. The current commands are the following:
 
 #### `require`
-`require` allows a template to assert that particular variables must be included in its rendering context. If any of the specified variables are not included, the template will fail to render. It takes as arguments a comma-separated list of unquoted variable names. Example:
+`require` allows a template to assert that particular variables must be included in its rendering context. If any of the specified variables are not included, the template will fail to render. This is useful because when a variable is not defined in the context, it is always taken to be some particular value, by default `''`. It takes as arguments a comma-separated list of unquoted variable names. Example:
 ```
 :require first, second, third
 ```
