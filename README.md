@@ -33,15 +33,15 @@ TBW
         - empty
             Easy looping as well
 ```
-# Syntax
+## Syntax Documentation
 
-## Blocks
+### Blocks
 Wyrm uses indentation to define blocks, though the indentation level can be arbitrary, and can differ from block to block. All that matters is that all lines that are supposed to be in the same block have the same indentation.
 
-## Line indicators
+### Line indicators
 Wyrm uses the punctuation characters `: - = / %` to explicitly mark the various types of line. All line indicators may be optionally followed by a single space, to enhance readability.
 
-## Plaintext
+### Plaintext
 Any line that does not begin with one of the indicators is considered plaintext, and is mostly displayed without special modifications. There are several exceptions to this generalisation.
 
 Firstly, pairs of curly brackets `{...}` evaluate their contents as an expression, and interpolate the result. In order to display literal brackets, simply escape the opening bracket with a backslash: `\{`. An opening bracket without a closing bracket on the same line, however, never needs escaping. Examples:
@@ -63,16 +63,16 @@ Such leading backslashes are removed before displaying the line, meaning that in
 \= This line renders literally =
 ```
 
-## Commands `:`
+### Commands `:`
 Wyrm has a number of commands that do various things from inserting prewritten text (like the complex doctypes of HTML/XHTML/XML) to defining the inheritance structure of a template. The current commands are the following:
 
-### `require`
+#### `require`
 `require` allows a template to assert that particular variables must be included in its rendering context. If any of the specified variables are not included, the template will fail to render. It takes as arguments a comma-separated list of unquoted variable names. Example:
 ```
 :require first, second, third
 ```
 
-### `include`
+#### `include`
 `include` renders another template as part of this one. This is the workhorse of the inheritance system, and is used both for including sub-templates and for extending base templates. It is used with `block` (see below) to override portions of the included templates. It takes as its first argument one of the following:
 - a string giving the path to a template, when combined with one of the search directories defined in the engine config, and the file extension `.wyrm`;
 - an expression that evaluates in the current context to a string as specified above;
@@ -84,13 +84,13 @@ Example:
 :include 'base.html' with header_colour='blue', title='Community Forum'
 ```
 
-### `block`
+#### `block`
 `block` is used to define and override sections of templates in conjunction with `include`, as part of the inheritance system. This should not be confused with indentation-defined code blocks. As the direct child of an `include` command, it overrides blocks in the included template (as well as any templates *it* includes, and so on) with its own contents, while anywhere else it defines an overridable section of the document, whose contents are the default to be used in case the block does not get overridden. It takes as an argument a single unquoted string, serving as the block's identifier. Example:
 ```
 :block mainContent
 ```
 
-### `html`
+#### `html`
 `html` is used to generate a doctype along with an `<html>` tag. The arguments to `html` are a little complex, as they come in two sets: arguments to select the correct doctype, and attributes to the `<html>` tag. The doctype selectors come first, and can be one of the following:
 - no argument given. This defaults to the default doctype given in the config, currently HTML 5.
 - `5`: HTML 5
@@ -111,7 +111,7 @@ Example:
     - `<!doctype html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">`
 Attributes are put after the doctype selectors, and follow the format used by other HTML tags, for which see there.
 
-### `css`, `js`, `md`
+#### `css`, `js`, `md`
 `css`, `js`, and `md` are used to include CSS, Javascript, and markdown respectively. Each command can either have a single argument, evaluating to a string giving the filename of a file to include (where the appropriate file extension is added automatically), or they can have a block with appropriately formatted plaintext. In the case of `css` and `js`, the commands will render to the appropriate HTML tags (`<link>` or `<style>` for `css`, and `<script>` for `js`), while `md` renders directly to HTML. Examples:
 ```
 :js 'link/to/script'
@@ -119,10 +119,10 @@ Attributes are put after the doctype selectors, and follow the format used by ot
     # Embedded Markdown!
 ```
 
-## Control code `-`
+### Control code `-`
 There are two systems of flow control in Wyrm, `if` and `for`. `if` allows blocks to be displayed conditionally, while `for` allows blocks to be displayed multiple times, once for each item in an iterable. There is also `with`, which allows binding expressions to local names.
 
-### `if`, `elif`, `else`
+#### `if`, `elif`, `else`
 `if`, `elif`, and `else` are used together exactly as in Python to construct complex conditional statements. `if` and `elif` take a single expression as an argument, which will be cast to a boolean if it doesn't evaluate as such. The normal Python treatment of objects is used for this, so empty strings, lists, tuples, and dictionaries are all considered `False`, for example.
 
 The initial `if` clause may be followed by zero or more `elif` clauses, which cannot occur otherwise, and finally by an optional `else` clause that takes no arguments.
@@ -135,7 +135,7 @@ The initial `if` clause may be followed by zero or more `elif` clauses, which ca
     Displayed if neither expr1 or expr2 are truthy
 ```
 
-### `for`, `empty`, `else`
+#### `for`, `empty`, `else`
 `for`, `empty`, and `else` are used together in a way that's similar to Python's for loops, but differs in the behaviour of the `else` clause. The initial `for` is followed by a comma-separated list of one or more variable names, the `in` keyword, and then an expression that must evaluate to an iterable object. As in Python, for each iteration of the loop the next item of the iterable will be taken and assigned to the variable name(s), with sequence unpacking if necessary. If sequence unpacking occurs, the length of the sequence must exactly match the number of variable names provided. Unlike Python, these variables are only available inside the loop.
 
 The for loop sets a number of additional variables inside the loop, giving information about the current state:
@@ -157,7 +157,7 @@ After the `for` loop completes, the `else` clause, if provided, will be displaye
     % p: There are no authors
 ```
 
-### `with`
+#### `with`
 `with` is used to bind the results of expressions to names, making them available within the nested block. A typical use is to "cache" the result of some complex operation, such as a call to the database. `with` takes a comma-separated list of keyword arguments, exactly like the keyword arguments introduced after the `with` keyword in an `include` command.
 ```
 - with wordlist=lang.word_set.all()
