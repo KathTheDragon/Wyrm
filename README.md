@@ -182,3 +182,13 @@ Wyrm can also display lines as HTML comments, passing them through to the render
 /! This is an HTML comment, saying {foo}
 ```
 
+### HTML Tags `%`
+HTML tags are the mainstay of HTML (and XML) documents, and it is important to format them correctly, a task Wyrm takes care of for you. There are three parts of the tag: the name; class and id shortcuts; and the attributes. The tag name can be any valid identifier (see below), and while XML allows `-` and `.` in tag names, these are forbidden by Wyrm. The tag name can also be omitted, and `div` will be assumed.
+
+The tag name is followed by class and id shortcuts. These follow the CSS practice of specifying class names with a leading `.`, and id names with a leading `#`. These may optionally be preceded by a single space, but there must be no spaces after the `.` or `#`, or within the class or id names. Class and id names may contain any of the valid identifier characters, as well as `-`.
+
+The attributes are the last thing in the tag, and are given as a space-separated list of `{name}={value}` pairs, where the name is a valid identifier, and the value is an expression that must evaluate to a string, an integer, or a boolean. A value evaluating to `False` will be treated as though the attribute was not included at all, while a value evaluating to `True` is equivalent to giving just the attribute name (thus mirroring HTML's binary attributes) as well as setting the attribute value to the same as the attribute name, but as a string (thus conforming to XHTML). If the `id` attribute is given here, it will be overridden by an id shortcut, while if the `class` attribute is given, it will be appended to by any class shortcuts.
+```
+% input #searchbox.roundable-border type="text" name="search" required
+```
+
