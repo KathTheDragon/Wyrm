@@ -16,8 +16,8 @@ TOKENS = {
     'UNKNOWN': r'.'
 }
 TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
-INDICATOR_REGEX = re.compile(r'([/%\-=:]|/!)? ?')
-TEXT_REGEX = re.compile(r'.*$', flags=re.M)
+INDICATOR_REGEX = re.compile(r'(?P<INDICATOR>([/%\-=:]|/!)? ?)')
+TEXT_REGEX = re.compile(r'(?P<TEXT>.*$)', flags=re.M)
 
 ## Exceptions
 class CompilerError(Exception):
@@ -43,19 +43,15 @@ def tokenise(string):
     while ix < len_string:
         match = None
         column = ix-line_start
+        regex = TOKEN_REGEX
         if last_token is not None:
             if last_token.type in ('INDENT', 'INLINE'):
-                match = INDICATOR_REGEX.match(string, ix)
-                type = 'INDICATOR'
-                value = match.group()
+                regex = INDICATOR_REGEX
             elif last_token.type == 'INDICATOR' and last_token.value in ('', '/', '/!'):
-                match = TEXT_REGEX.match(string, ix)
-                type = 'TEXT'
-                value = match.group()
-        if match is None:
-            match = TOKEN_REGEX.match(string, ix)
-            type = match.lastgroup
-            value = match.group()
+                regex = TEXT_REGEX
+        match = regex.match(string, ix)
+        type = match.lastgroup
+        value = match.group()
         if type == 'INDENT':
             if text_indent is not None:
                 if len(value) > len(text_indent):
