@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 ## Constants
 TOKENS = {
-    'INDENT': r'^ *',
+    'INDENT': r'^ *(?!$| )',
     'OPERATOR': r'[#.^~]|[+\-=!%@&|]=?|[*/<>]{1,2}=?',
     'SEPARATOR': r'[,:] ?',
     'LBRACKET': r'[([{]',
