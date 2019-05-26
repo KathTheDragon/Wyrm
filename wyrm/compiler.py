@@ -58,9 +58,12 @@ def tokenise(string):
                     value = text_indent
                 else:
                     text_indent = None
-        elif type == 'INDICATOR' and last_token.type == 'INDENT' and value == '':
+        ix += len(value)
+        if type in ('INDICATOR', 'SEPARATOR'):
+            value = value.strip()
+        if type == 'INDICATOR' and last_token.type == 'INDENT' and value == '':
             text_indent = last_token.value
-        elif type == 'SEPARATOR' and value.startswith(':'):
+        elif type == 'SEPARATOR' and value == ':':
             if not brackets:
                 type = 'INLINE'
         elif type == 'LBRACKET':
@@ -75,11 +78,6 @@ def tokenise(string):
             pass  # Might do something later with converting these to more specific tokens, like keywords, tag names, etc.
         elif type == 'UNKNOWN':
             raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
-        ix += len(value)
-        if type == 'INDICATOR':
-            value = value.strip()
-        elif type in ('INLINE', 'SEPARATOR'):
-            value = value.strip()
         token = Token(type, value, line_num, column)
         yield token
         if type == 'NEWLINE':
