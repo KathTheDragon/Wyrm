@@ -16,6 +16,9 @@ class TemplateError(Exception):
 class Node:
     __slots__ = ()
 
+    def append(self, value):
+        raise NodeError('node cannot take children')
+
     def render(self, *contexts):
         return []
 
@@ -30,7 +33,10 @@ class NodeChildren(Node):
         return self.children[key]
 
     def __setitem__(self, key, value):
-        self.children[key] = value
+        if isinstance(value, Node):
+            self.children[key] = value
+        else:
+            raise NodeError('nodes may only have nodes as children')
 
     def __delitem__(self, key):
         del self.children[key]
@@ -43,6 +49,12 @@ class NodeChildren(Node):
 
     def __contains__(self, value):
         return value in self.children
+
+    def append(self, value):
+        if isinstance(value, Node):
+            self.children.append(value)
+        else:
+            raise NodeError('nodes may only have nodes as children')
 
     def render(self, *contexts):
         lines = []
