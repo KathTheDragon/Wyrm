@@ -84,12 +84,9 @@ def tokenise(string):
             value = value.strip() or '|'
         elif type in ('INLINE', 'SEPARATOR'):
             value = value.strip()
-        elif type == 'WHITESPACE':
-            continue
-        elif type == 'NEWLINE':
-            line_num += 1
-            line_start = ix
-            continue
         token = Token(type, value, line_num, column)
         yield token
+        if type == 'NEWLINE':
+            line_num += 1
+            line_start = ix
         last_token = token
