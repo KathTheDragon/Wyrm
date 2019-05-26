@@ -163,3 +163,22 @@ After the `for` loop completes, the `else` clause, if provided, will be displaye
 - with wordlist=lang.word_set.all()
 ```
 
+### Output code `=`
+While the values of expressions can be displayed via interpolating into plaintext, the preferred way to display just the value of a single expression, and nothing else, is to directly output it using the `=` line indicator. This evaluates whatever is to the right as an expression, and displays it. A typical use is to fill the contents of a tag:
+```
+% a href=link_target: = link_name
+```
+
+### Comments `/`
+While many languages have both line and block comments, Wyrm only has line comments for hiding text from the rendered output. In order to hide blocks of text, each line must be commented out. Additionally, Wyrm doesn't have inline comments - each comment must be on its own line. Examples:
+```
+/ This line is not displayed
+This line is displayed / And so is this
+```
+
+### HTML Comments `/!`
+Wyrm can also display lines as HTML comments, passing them through to the rendered output. These comments can also contain interpolated expressions, exactly like plaintext:
+```
+/! This is an HTML comment, saying {foo}
+```
+
