@@ -192,3 +192,20 @@ The attributes are the last thing in the tag, and are given as a space-separated
 % input #searchbox.roundable-border type="text" name="search" required
 ```
 
+### Inlining blocks
+It frequently occurs that a block consists of exactly one line (which may or may not have its own nested block), such as the text content of a tag. In these cases, it is possible to inline the block, writing it on the same line as its parent, by writing a `:`, optionally followed by a space, and then the inlined block. If a line containing an inlined block if followed by a nested block, it is considered to be a child of the last inlined block, making these two snippets fully equivalent:
+```
+- if permission: % p: % a href="www.google.com"
+    A couple
+    lines of
+    text.
+```
+```
+- if permission
+    % p
+        % a href="www.google.com"
+            A couple
+            lines of
+            text.
+```
+
