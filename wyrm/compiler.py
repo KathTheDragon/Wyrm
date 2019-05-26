@@ -77,7 +77,7 @@ def tokenise(string):
             raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
         ix += len(value)
         if type == 'INDICATOR':
-            value = value.strip() or '|'
+            value = value.strip()
         elif type in ('INLINE', 'SEPARATOR'):
             value = value.strip()
         token = Token(type, value, line_num, column)
