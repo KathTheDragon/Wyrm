@@ -5,9 +5,9 @@ from dataclasses import dataclass
 STRING = r'([^\\]|\\.)*?'
 TOKENS = {
     'INDENT': r'^ *',
-    'OPERATOR': r'[#.^~]|[+\-=!%@&|]=?|[*/<>]{1,2}=?',
     'WHITESPACE': r' +',
     'NEWLINE': r'\n',
+    'OPERATOR': r'[-+@&|^~#.]|[<>!=]?=|[*/<>]{1,2}',
     'SEPARATOR': r'[,:]',
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
