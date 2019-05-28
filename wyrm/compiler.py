@@ -18,7 +18,7 @@ TOKENS = {
 }
 TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
 INDICATOR_REGEX = re.compile(r'(?P<INDICATOR>([/%\-=:]|/!)? ?)')
-TEXT_REGEX = re.compile(r'(?P<TEXT>.*$)', flags=re.M)
+TEXT_REGEX = re.compile(fr'(?P<TEXT>{STRING}$)', flags=re.M)
 
 ## Exceptions
 class CompilerError(Exception):
