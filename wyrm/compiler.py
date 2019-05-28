@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 
 ## Constants
+STRING = r'([^\\]|\\.)*?'
 TOKENS = {
     'INDENT': r'^ *',
     'OPERATOR': r'[#.^~]|[+\-=!%@&|]=?|[*/<>]{1,2}=?',
@@ -9,7 +10,7 @@ TOKENS = {
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
     'IDENTIFIER': r'[a-zA-Z_]\w*',
-    'STRING': r'\".*?[^\\]\"|\'.*?[^\\]\'|[\'\"]{2}',
+    'STRING': fr'\'{STRING}\'|\"{STRING}\"',
     'NUMBER': r'\d+\.?\d*',
     'WHITESPACE': r' +',
     'NEWLINE': r'\n',
