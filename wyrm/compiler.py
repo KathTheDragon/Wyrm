@@ -6,7 +6,7 @@ STRING = r'([^\\]|\\.)*?'
 TOKENS = {
     'INDENT': r'^ *',
     'OPERATOR': r'[#.^~]|[+\-=!%@&|]=?|[*/<>]{1,2}=?',
-    'SEPARATOR': r'[,:] ?',
+    'SEPARATOR': r'[,:]',
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
     'IDENTIFIER': r'[a-zA-Z_]\w*',
