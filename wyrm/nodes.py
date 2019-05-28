@@ -3,7 +3,7 @@ from typing import Tuple, List, Dict, Optional
 from .expression import Expression, String
 
 ## Constants
-__all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode']
+__all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode', 'HTMLNode', 'MarkdownNode']
 
 ## Exceptions
 class TokenError(Exception):
@@ -106,7 +106,7 @@ class HTMLCommentNode(TextNode):
 @dataclass
 class HTMLTagNode(NodeChildren):
     name: str = ''
-    attributes: dict = field(default_factory=dict)
+    attributes: Dict[str, Expression] = field(default_factory=dict)
 
     @staticmethod
     def make(line):
@@ -315,6 +315,43 @@ class RequireNode(Node):
                 raise TemplateError(f'variable not in context: {var!r}')
         return []
 
+@dataclass
+class HTMLNode(NodeChildren):
+    doctype: str = '5'  # To outsource to the config
+    attributes: Dict[str, Expression] = field(default_factory=dict)
+
+    @staticmethod
+    def make(line):
+        from .htmltag import makeAttributes
+        doctype = ''
+        if line[0].type == 'NUMBER':
+            doctype, line = str(line[0].value0), line[1:]
+            if line[0].type == 'IDENTIFIER' and line[0].value in ('strict', 'transitional', 'frameset'):
+                doctype, line = ' '.join(doctype, line[0].value), line[1:]
+            elif doctype in ('1', '4'):
+                doctype = ' '.join(doctype, 'strict')
+        attributes = makeAttributes(line)
+        return HTMLNode(doctype=doctype, attributes=attributes)
+
+@dataclass
+class MarkdownNode(NodeChildren):
+    src: Optional[Expression] = None
+
+    @staticmethod
+    def make(line):
+        if line:
+            return MarkdownNode(Expression.make(line))
+        else:
+            return MarkdownNode()
+
+    def render(self, *contexts):
+        from .template import load_file
+        if self.src is None:
+            string = '\n'.join(super().render(*contexts))
+        else:
+            string = load_file(self.src.evaluate(*contexts), '.md')
+        return markdown(string).splitlines()
+
 ## Helper Classes
 @dataclass
 class LoopVars:
@@ -333,3 +370,8 @@ class LoopVars:
         self.revcounter1 = length - self.counter
         self.first = self.counter == 0
         self.last = self.revcounter == 0
+
+## Helper Functions
+# Temp
+def markdown(string):
+    return string

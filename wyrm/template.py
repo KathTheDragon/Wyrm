@@ -4,3 +4,6 @@ class Template:
 
 def load_template(filename):
     return Template()
+
+def load_file(filename, extension=''):
+    return ''
