@@ -169,7 +169,7 @@ class ForNode(NodeChildren):
                 context = dict(zip(self.vars, item))
                 context['loop'] = LoopVars(i, length, parent)
                 lines.extend(loop.render(*contexts, context))
-            if else_ is not None
+            if else_ is not None:
                 lines.extend(else_.render(*contexts))
         elif empty is not None:
             return empty.render(*contexts)
