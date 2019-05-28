@@ -104,7 +104,7 @@ def compile_tokens(tokens):
         if len(line) == 0:  # End of template
             indent = 0
             _nodes, _prenodes = [], []
-        elif len(line) == 1:  # Blank line, special handling
+        elif len(line) == 2:  # Blank line, special handling
             indent = indents[-1]
             _nodes, _prenodes = [TextNode()], []
         else:
