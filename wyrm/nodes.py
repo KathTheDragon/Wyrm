@@ -15,8 +15,6 @@ class TemplateError(Exception):
 ## Nodes
 @dataclass
 class Node:
-    __slots__ = ()
-
     def append(self, value):
         raise NodeError('node cannot take children')
 
@@ -28,7 +26,7 @@ class Node:
 
 @dataclass
 class NodeChildren(Node):
-    children: List[Node] = field(default_factory=list)  # I'd like to be able to remove this default so I can use __slots__ on all subclasses
+    children: List[Node] = field(default_factory=list)
 
     def __len__(self):
         return len(self.children)
@@ -74,7 +72,7 @@ class NodeChildren(Node):
 
 @dataclass
 class RootNode(NodeChildren):
-    __slots__ = ()
+    pass
 
 # Text nodes
 @dataclass
@@ -87,15 +85,11 @@ class TextNode(Node):
 
 @dataclass
 class CommentNode(TextNode):
-    __slots__ = ()
-
     def render(self, *contexts):
         return []
 
 @dataclass
 class HTMLCommentNode(TextNode):
-    __slots__ = ()
-
     def render(self, *contexts):
         return ['<!--'] + super().render(*contexts) + ['-->']
 
@@ -122,8 +116,6 @@ class ExpressionNode(Node):
 # Control nodes
 @dataclass
 class IfNode(NodeChildren):
-    __slots__ = ()
-
     def render(self, *contexts):
         for child in self:
             lines = child.render(*contexts)
@@ -175,11 +167,11 @@ class ForNode(NodeChildren):
 
 @dataclass
 class LoopNode(NodeChildren):
-    __slots__ = ()
+    pass
 
 @dataclass
 class EmptyNode(NodeChildren):
-    __slots__ = ()
+    pass
 
 @dataclass
 class WithNode(NodeChildren):
