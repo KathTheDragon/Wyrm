@@ -77,6 +77,8 @@ def tokenise_string(string):
                 raise CompilerError(f'mismatched brackets: `{value}` @ {line_num}:{column}')
         elif type == 'IDENTIFIER':
             pass  # Might do something later with converting these to more specific tokens, like keywords, tag names, etc.
+        elif type == 'WHITESPACE':
+            continue
         elif type == 'UNKNOWN':
             raise CompilerError(f'unknown character: `{value}` @ {line_num}:{column}')
         last_token = Token(type, value, line_num, column)
