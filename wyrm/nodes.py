@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, replace, InitVar
 from typing import Tuple, List, Dict, Optional
-from .expression import Expression
+from .expression import Expression, String
 
 ## Constants
 __all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode']
@@ -84,15 +84,14 @@ class RootNode(NodeChildren):
 # Text nodes
 @dataclass
 class TextNode(Node):
-    text: str = ''
+    text: String = String()
 
     @classmethod
     def make(cls, line):
-        return cls(text=line[0].value)
+        return cls(text=String(line[0].value))
 
     def render(self, *contexts):
-        from .expression import String
-        return [String(self.text).evaluate(*contexts)]
+        return [self.text.evaluate(*contexts)]
 
 @dataclass
 class CommentNode(TextNode):
