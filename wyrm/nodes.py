@@ -6,6 +6,9 @@ from .expression import Expression
 __all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode']
 
 ## Exceptions
+class TokenError(Exception):
+    pass
+
 class NodeError(Exception):
     pass
 
