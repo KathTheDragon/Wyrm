@@ -216,4 +216,5 @@ It frequently occurs that a block consists of exactly one line (which may or may
             lines of
             text.
 ```
+While the use of `:` for inlining could potentially be confused with its use as a line indicator, in practice the two can always be told apart, as at the beginning of a line, `:` is always a line indicator, and in the middle of a line (outside of any brackets), a single `:` is always the inlining operator, and a double `:` (possibly separated by whitespace) is always the inlining operator followed by a line indicator.
 
