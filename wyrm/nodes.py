@@ -191,13 +191,13 @@ class WithNode(NodeChildren):
 # Command nodes
 @dataclass
 class IncludeNode(NodeChildren):
-    filename: str = ''
+    file: Expression = Expression()
     vars: Dict[str, Expression] = field(default_factory=dict)
     limit_context: bool = False
 
     def render(self, *contexts):
         from .template import load_template
-        template = load_template(filename)  # Temporary call
+        template = load_template(self.file.evaluate(*contexts))  # Temporary call
         context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
         _blocks = {}
         for block in self:
