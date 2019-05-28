@@ -203,7 +203,7 @@ class IncludeNode(NodeChildren):
         for block in self:
             _blocks[block.name] = block.render(*contexts)
         context['_blocks'] = _blocks
-        if limit_context:
+        if self.limit_context:
             return template.render(context)
         else:
             return template.render(context, *contexts)
