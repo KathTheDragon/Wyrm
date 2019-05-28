@@ -103,13 +103,13 @@ def compile_tokens(tokens):
     for line in lines:
         if len(line) == 0:  # End of template
             indent = 0
-            _nodes, _prenodes = [], []
+            _nodes = []
         elif len(line) == 2:  # Blank line, special handling
             indent = indents[-1]
-            _nodes, _prenodes = [TextNode()], []
+            _nodes = [TextNode()]
         else:
             indent = len(line[0].value)
-            _nodes, _prenodes = compile_line(line[1:])
+            _nodes = compile_line(line[1:])
         while indent < indents[-1]:
             indents.pop()
             node = nodes.pop()
@@ -119,6 +119,5 @@ def compile_tokens(tokens):
             nodes[-1].append(node)
         elif not isinstance(nodes[-1], NodeChildren):
             raise CompilerError(f'node {nodes[-1]} does not support children')
-        nodes[-1].extend(_prenodes)
         nodes.extend(_nodes)
     return nodes[0]
