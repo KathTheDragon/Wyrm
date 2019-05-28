@@ -109,6 +109,7 @@ Example:
     - `<!doctype html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">`
 - `1.1` XHTML 1.1
     - `<!doctype html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">`
+
 Attributes are put after the doctype selectors, and follow the format used by other HTML tags, for which see there.
 
 #### `css`, `js`, `md`
