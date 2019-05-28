@@ -249,7 +249,7 @@ class LoopVars:
     revcounter1: int = field(init=False)
     first: bool = field(init=False)
     last: bool = field(init=False)
-    parent: Optional[LoopVars] = None
+    parent: Optional['LoopVars'] = None
 
     def __post_init__(self, length):
         self.counter1 = self.counter + 1
