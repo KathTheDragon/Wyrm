@@ -179,10 +179,14 @@ class EmptyNode(NodeChildren):
 @dataclass
 class WithNode(NodeChildren):
     vars: Dict[str, Expression] = field(default_factory=dict)
+    limit_context: bool = False
 
     def render(self, *contexts):
         context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
-        return super().render(context, *contexts)
+        if self.limit_context:
+            return super().render(context)
+        else:
+            return super().render(context, *contexts)
 
 # Command nodes
 @dataclass
