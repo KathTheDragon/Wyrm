@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field, replace, InitVar
 from typing import Tuple, List, Dict, Optional
+from .expression import Expression
 
 ## Constants
 __all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode']
@@ -82,7 +83,7 @@ class TextNode(Node):
 
     def render(self, *contexts):
         from .expression import String
-        return [String(self.text).format(*contexts)]
+        return [String(self.text).evaluate(*contexts)]
 
 @dataclass
 class CommentNode(TextNode):
@@ -113,11 +114,10 @@ class HTMLTagNode(NodeChildren):
 
 @dataclass
 class ExpressionNode(Node):
-    value: str = ''
+    expr: Expression = Expression()
 
     def render(self, *contexts):
-        from .expression import evaluate
-        return [evaluate(self.value)]
+        return [self.expr.evaluate(*contexts)]
 
 # Control nodes
 @dataclass
@@ -133,11 +133,10 @@ class IfNode(NodeChildren):
 
 @dataclass
 class ConditionNode(NodeChildren):
-    condition: str = ''
+    condition: Expression = Expression()
 
     def render(self, *contexts):
-        from .expression import evaluate
-        if evaluate(self.condition, *contexts):
+        if self.condition.evaluate(*contexts):
             return super().render(*contexts)
         else:
             return []
@@ -145,12 +144,11 @@ class ConditionNode(NodeChildren):
 @dataclass
 class ForNode(NodeChildren):
     vars: Tuple[str] = ()
-    container: str = ''
+    container: Expression = ''
 
     def render(self, *contexts):
-        from .expression import evaluate
         lines = []
-        container = evaluate(self.container, *contexts)
+        container = self.container.evaluate(*contexts)
         loop = empty = else_ = None
         for child in self:
             if isinstance(child, LoopNode):
@@ -185,25 +183,23 @@ class EmptyNode(NodeChildren):
 
 @dataclass
 class WithNode(NodeChildren):
-    vars: Dict[str, str] = field(default_factory=dict)
+    vars: Dict[str, Expression] = field(default_factory=dict)
 
     def render(self, *contexts):
-        from .expression import evaluate
-        context = {var: evaluate(value, *contexts) for var, value in self.vars.items()}
         return super().render(*contexts, context)
+        context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
 
 # Command nodes
 @dataclass
 class IncludeNode(NodeChildren):
     filename: str = ''
-    vars: Dict[str, str] = field(default_factory=dict)
+    vars: Dict[str, Expression] = field(default_factory=dict)
     limit_context: bool = False
 
     def render(self, *contexts):
         from .template import load_template
-        from .expression import evaluate
         template = load_template(filename)  # Temporary call
-        context = {var: evaluate(value, *contexts) for var, value in self.vars.items()}
+        context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
         _blocks = {}
         for block in self:
             name = block.name
