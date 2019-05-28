@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 
 ## Constants
-STRING = r'([^\\]|\\.)*?'
+STRING = r'([^\\\n]|\\.)*?'
 TOKENS = {
     'INDENT': r'^ *',
     'WHITESPACE': r' +',
