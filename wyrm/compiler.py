@@ -32,7 +32,7 @@ class Token:
     col: int
 
 ## Functions
-def tokenise(string):
+def tokenise_string(string):
     brackets = []
     ix = 0
     line_num = 1
@@ -83,3 +83,39 @@ def tokenise(string):
         if type == 'NEWLINE':
             line_num += 1
             line_start = ix
+
+def compile_tokens(tokens):
+    # Make the lines
+    lines = [[]]
+    for token in tokens:
+        if token.type == 'NEWLINE':
+            lines.append([])
+            continue
+        lines[-1].append(token)
+    if not lines[-1]:
+        lines.append([])  # Ensure we end with an empty list
+    # Compile the lines
+    indents = [-1]
+    nodes = [RootNode()]
+    for line in lines:
+        if len(line) == 0:  # End of template
+            indent = 0
+            _nodes, _prenodes = [], []
+        elif len(line) == 1:  # Blank line, special handling
+            indent = indents[-1]
+            _nodes, _prenodes = [TextNode()], []
+        else:
+            indent = len(line[0].value)
+            _nodes, _prenodes = compile_line(line[1:])
+        while indent < indents[-1]:
+            indents.pop()
+            node = nodes.pop()
+            nodes[-1].append(node)
+        if indent = indents[-1]:
+            node = nodes.pop()
+            nodes[-1].append(node)
+        elif not isinstance(nodes[-1], NodeChildren):
+            raise CompilerError(f'node {nodes[-1]} does not support children')
+        nodes[-1].extend(_prenodes)
+        nodes.extend(_nodes)
+    return nodes[0]
