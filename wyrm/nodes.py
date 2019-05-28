@@ -166,7 +166,7 @@ class ForNode(NodeChildren):
             for i, item in enumerate(container):
                 context = dict(zip(self.vars, item))
                 context['loop'] = LoopVars(i, length, parent)
-                lines.extend(loop.render(*contexts, context))
+                lines.extend(loop.render(context, *contexts))
             if else_ is not None:
                 lines.extend(else_.render(*contexts))
         elif empty is not None:
@@ -186,8 +186,8 @@ class WithNode(NodeChildren):
     vars: Dict[str, Expression] = field(default_factory=dict)
 
     def render(self, *contexts):
-        return super().render(*contexts, context)
         context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
+        return super().render(context, *contexts)
 
 # Command nodes
 @dataclass
@@ -202,13 +202,12 @@ class IncludeNode(NodeChildren):
         context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
         _blocks = {}
         for block in self:
-            name = block.name
-            _blocks[name] = super(BlockNode, block).render(*contexts)
+            _blocks[block.name] = block.render(*contexts)
         context['_blocks'] = _blocks
         if limit_context:
             return template.render(context)
         else:
-            return template.render(*contexts, context)
+            return template.render(context, *contexts)
 
 @dataclass
 class BlockNode(NodeChildren):
@@ -217,9 +216,9 @@ class BlockNode(NodeChildren):
     def render(self, *contexts):
         for context in contexts:
             if '_blocks' in context:
-                blocks = context['_blocks']
+                _blocks = context['_blocks']
                 if self.name in blocks:
-                    return blocks[self.name].render(*contexts)
+                    return _blocks[self.name]
         return super().render(*contexts)
 
 @dataclass
