@@ -158,7 +158,7 @@ After the `for` loop completes, the `else` clause, if provided, will be displaye
 ```
 
 #### `with`
-`with` is used to bind the results of expressions to names, making them available within the nested block. A typical use is to "cache" the result of some complex operation, such as a call to the database. `with` takes a comma-separated list of keyword arguments, exactly like the keyword arguments introduced after the `with` keyword in an `include` command.
+`with` is used to bind the results of expressions to names, making them available within the nested block. A typical use is to "cache" the result of some complex operation, such as a call to the database. `with` takes a comma-separated list of keyword arguments, exactly like the keyword arguments introduced after the `with` keyword in an `include` command. Just like the `with` part of the `include` command, you can use `with only` to restrict the context inside the block to those defined in the `with` statement.
 ```
 - with wordlist=lang.word_set.all()
 ```
