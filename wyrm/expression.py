@@ -1,17 +1,28 @@
+from dataclasses import dataclass
+from typing import Tuple, Dict
+
 # Temp
+@dataclass
 class Expression:
-    def __init__(self):
-        pass
+    @staticmethod
+    def make(line):
+        return Expression()
 
     def evaluate(self, *contexts):
         return
 
+@dataclass
 class String(Expression):
-    def __init__(self, string):
-        self.string = string
+    string: str
 
     def evaluate(self, *contexts):
         return self.string
 
-def evaluate(string, *contexts):
-    return string
+@dataclass
+class ArgList:
+    args: Tuple[str]
+    kwargs: Dict[str, Expression]
+
+    @staticmethod
+    def make(line):
+        return ArgList([], {})
