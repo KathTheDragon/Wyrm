@@ -24,6 +24,10 @@ class Node:
     def extend(self, value):
         raise NodeError('node cannot take children')
 
+    @classmethod
+    def make(cls, line):
+        return cls()
+
     def render(self, *contexts):
         return []
 
@@ -82,6 +86,10 @@ class RootNode(NodeChildren):
 class TextNode(Node):
     text: str = ''
 
+    @classmethod
+    def make(cls, line):
+        return cls(text=line[0].value)
+
     def render(self, *contexts):
         from .expression import String
         return [String(self.text).evaluate(*contexts)]
@@ -101,6 +109,12 @@ class HTMLTagNode(NodeChildren):
     name: str = ''
     attributes: dict = field(default_factory=dict)
 
+    @staticmethod
+    def make(line):
+        from .htmltag import make as makeTag
+        name, attributes = makeTag(line)
+        return HTMLTagNode(name=name, attributes=attributes)
+
     def render(self, *contexts):
         from .htmltag import render as renderTag
         open, close = renderTag(self.name, self.attributes, *contexts)
@@ -112,6 +126,10 @@ class HTMLTagNode(NodeChildren):
 @dataclass
 class ExpressionNode(Node):
     expr: Expression = Expression()
+
+    @staticmethod
+    def make(line):
+        return ExpressionNode(expr=Expression.make(line))
 
     def render(self, *contexts):
         return [self.expr.evaluate(*contexts)]
@@ -130,6 +148,13 @@ class IfNode(NodeChildren):
 class ConditionNode(NodeChildren):
     condition: Expression = Expression()
 
+    @staticmethod
+    def make(line):
+        if not line:
+            return ConditionNode(condition=Expression(True))
+        else:
+            return ConditionNode(condition=Expression.make(line))
+
     def render(self, *contexts):
         if self.condition.evaluate(*contexts):
             return super().render(*contexts)
@@ -140,6 +165,20 @@ class ConditionNode(NodeChildren):
 class ForNode(NodeChildren):
     vars: Tuple[str] = ()
     container: Expression = ''
+
+    @staticmethod
+    def make(line):
+        from .expression import ArgList
+        for ix, token in enumerate(line):
+            if token.type == 'IDENTIFIER' and token.value == 'in':
+                break  # This leaves `ix` as the index of the `in` token
+        else:
+            raise NodeError('`for` requires the keyword `in`')
+        vars = ArgList.make(line[:ix])
+        if vars.kwargs:
+            raise NodeError('`for` cannot take keyword variables in the variable list')
+        container = Expression.make(line[ix+1:])
+        return ForNode(vars=vars.args, container=container)
 
     def render(self, *contexts):
         lines = []
@@ -181,6 +220,19 @@ class WithNode(NodeChildren):
     vars: Dict[str, Expression] = field(default_factory=dict)
     limit_context: bool = False
 
+    @staticmethod
+    def make(line):
+        from .expression import ArgList
+        if line and line[0].type == 'IDENTIFIER' and line[0].value == 'only':
+            line = line[1:]
+            limit_context = True
+        else:
+            limit_context = False
+        vars = ArgList.make(line)
+        if vars.args:
+            raise NodeError('`with` takes only keyword variables')
+        return WithNode(vars=vars.kwargs, limit_context=limit_context)
+
     def render(self, *contexts):
         context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
         if self.limit_context:
@@ -194,6 +246,24 @@ class IncludeNode(NodeChildren):
     file: Expression = Expression()
     vars: Dict[str, Expression] = field(default_factory=dict)
     limit_context: bool = False
+
+    @staticmethod
+    def make(line):
+        from .expression import ArgList
+        for ix, token in enumerate(line):
+            if token.type == 'IDENTIFIER' and token.value == 'with':
+                break  # This leaves `ix` as the index of the `with` token
+        else:
+            ix = None
+        file = Expression.make(line[:ix])
+        if ix is None:
+            return IncludeNode(file=file)
+        else:
+            try:
+                with_ = WithNode.make(line[ix+1:])
+            except NodeError:
+                raise NodeError('`include` takes only keyword variables')
+            return IncludeNode(file=file, vars=with_.vars, limit_context=with_.limit_context)
 
     def render(self, *contexts):
         from .template import load_template
@@ -212,6 +282,11 @@ class IncludeNode(NodeChildren):
 class BlockNode(NodeChildren):
     name: str = ''
 
+    @staticmethod
+    def make(line):
+        if line[0].type == 'IDENTIFIER':
+            return BlockNode(line[0].value)
+
     def render(self, *contexts):
         for context in contexts:
             if '_blocks' in context:
@@ -223,6 +298,14 @@ class BlockNode(NodeChildren):
 @dataclass
 class RequireNode(Node):
     vars: Tuple[str] = ()
+
+    @staticmethod
+    def make(line):
+        from .expression import ArgList
+        vars = ArgList.make(line)
+        if vars.kwargs:
+            raise NodeError('`require` cannot take keyword variables')
+        return RequireNode(vars.args)
 
     def render(self, *contexts):
         for var in self.vars:
