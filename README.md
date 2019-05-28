@@ -36,13 +36,17 @@ TBW
 ## Syntax Documentation
 
 ### Blocks
-Wyrm uses indentation to define blocks, though the indentation level can be arbitrary, and can differ from block to block. All that matters is that all lines that are supposed to be in the same block have the same indentation.
+Wyrm uses indentation to define blocks, though the indentation level can be arbitrary, and can differ from block to block. All that matters is that all lines that are supposed to be in the same block have the same indentation. Both tabs and spaces can be used arbitrarily, but tabs are implicitly converted to spaces - by default, tabs are converted to 4 spaces, but this number can be set in the config.
 
 ### Line indicators
-Wyrm uses the punctuation characters `: - = / %` to explicitly mark the various types of line. All line indicators may be optionally followed by a single space, to enhance readability.
+The punctuation characters `: - = / %`, as well as the two-character indicator `/!`, are used immediately after the indentation at the beginning of a line to mark six of the seven types of line explained below: commands, control code, output code, comments, HTML comments, and HTML tags. The seventh type, plaintext, is left unmarked. All line indicators may be optionally followed by a single space, to enhance readability. These punctuation characters are also used as line indicators in inlined blocks, explained below. These are the only two contexts that they are interpreted as line indicators.
 
 ### Plaintext
-Any line that does not begin with one of the indicators is considered plaintext, and is mostly displayed without special modifications. There are several exceptions to this generalisation.
+Any line that does not begin with one of the indicators is considered plaintext, and is mostly displayed without special modifications. Example:
+```
+This line displays exactly as written.
+```
+There are several exceptions to this generalisation.
 
 Firstly, pairs of curly brackets `{...}` evaluate their contents as an expression, and interpolate the result. In order to display literal brackets, simply escape the opening bracket with a backslash: `\{`. An opening bracket without a closing bracket on the same line, however, never needs escaping. Examples:
 ```
@@ -54,13 +58,16 @@ Nor do these {lines
 
 The second exception is that when there are multiple consecutive lines of text, the lines all use the indentation of the first one, even if the subsequent lines are indented further. Any non-text line will reset this behaviour. If the first line also needs leading whitespace, simply begin that line with a backslash `\`:
 ```
-\    This line starts with four spaces.
+This line has no leading whitespace.
+    But this one has four spaces.
+/ This comment interrupts the block of text
+\    This line also starts with four spaces.
     So does this one.
         But this one starts with eight.
 ```
 Such leading backslashes are removed before displaying the line, meaning that in order to begin a text line with one of the reserved punctuation marks, simply precede them with a backslash as well:
 ```
-\= This line renders literally =
+\= This line renders as literal text =
 ```
 
 ### Commands `:`
@@ -184,7 +191,7 @@ Wyrm can also display lines as HTML comments, passing them through to the render
 ```
 
 ### HTML Tags `%`
-HTML tags are the mainstay of HTML (and XML) documents, and it is important to format them correctly, a task Wyrm takes care of for you. There are three parts of the tag: the name; class and id shortcuts; and the attributes. The tag name can be any valid identifier (see below), and while XML allows `-` and `.` in tag names, these are forbidden by Wyrm. The tag name can also be omitted, and `div` will be assumed.
+HTML tags are the mainstay of HTML (and XML) documents, and it is important to format them correctly, a task Wyrm takes care of for you. There are three parts of the tag: the name; class and id shortcuts; and the attributes. The tag name can be any valid identifier (see below), and while XML also allows `-` and `.` in tag names (though their use is discouraged), these are presently disallowed by Wyrm. In the case of `.`, this is due to collision with class shortcuts, as described below. `-` may in the future be allowed. The tag name can also be omitted, and `div` will be assumed, due to the tag's high frequency in HTML.
 
 The tag name is followed by class and id shortcuts. These follow the CSS practice of specifying class names with a leading `.`, and id names with a leading `#`. These may optionally be preceded by a single space, but there must be no spaces after the `.` or `#`, or within the class or id names. Class and id names may contain any of the valid identifier characters, as well as `-`.
 
