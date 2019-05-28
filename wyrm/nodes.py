@@ -19,6 +19,9 @@ class Node:
     def append(self, value):
         raise NodeError('node cannot take children')
 
+    def extend(self, value):
+        raise NodeError('node cannot take children')
+
     def render(self, *contexts):
         return []
 
@@ -53,6 +56,12 @@ class NodeChildren(Node):
     def append(self, value):
         if isinstance(value, Node):
             self.children.append(value)
+        else:
+            raise NodeError('nodes may only have nodes as children')
+
+    def extend(self, value):
+        if all(isinstance(node, Node) for node in value):
+            self.children.extend(value)
         else:
             raise NodeError('nodes may only have nodes as children')
 
