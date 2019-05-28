@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, replace, InitVar
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Dict, Optional
 
 ## Constants
 __all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode']
