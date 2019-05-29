@@ -333,6 +333,12 @@ class HTMLNode(NodeChildren):
         attributes = makeAttributes(line)
         return HTMLNode(doctype=doctype, attributes=attributes)
 
+    def render(self, *contexts):
+        from .htmltag import DOCTYPES, render as renderTag
+        doctype = DOCTYPES[self.doctype]
+        open, close = renderTag('html', self.attributes, *contexts)
+        return [doctype, open] + super().render(*contexts) + [close]
+
 @dataclass
 class MarkdownNode(NodeChildren):
     src: Optional[Expression] = None
