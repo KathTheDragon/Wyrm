@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from .nodes import *
 
 ## Constants
 STRING = r'([^\\\n]|\\.)*?'
@@ -121,3 +122,47 @@ def compile_tokens(tokens):
             raise CompilerError(f'node {nodes[-1]} does not support children')
         nodes.extend(_nodes)
     return nodes[0]
+
+def compile_line(line):
+    indicator, line = line[0].value, line[1:]
+    for i, token in enumerate(line):
+        if token.value == 'INLINE':
+            line = line[:i]
+            inlineNodes = compile_line(line[i+1:])
+            break
+    else:
+        inlineNodes = []
+    if indicator in ('-', ':'):
+        key, line = line[0].value, line[1:]
+    else:
+        key = indicator
+    if key in ('else', 'empty') and line:
+        raise TemplateError(f'`{key}` clause takes no arguments')
+    node = {
+        '': TextNode,
+        '/': CommentNode,
+        '/!': HTMLCommentNode,
+        '%': HTMLTagNode,
+        '=': ExpressionNode,
+        'if': ConditionNode,
+        'elif': ConditionNode,
+        'else': ConditionNode,
+        'for': ForNode,
+        'empty': EmptyNode,
+        'with': WithNode,
+        'require': RequireNode,
+        'include': IncludeNode,
+        'block': BlockNode,
+        'html': HTMLNode,
+        'css': CSSNode,
+        'js': JSNode,
+        'md': MarkdownNode,
+    }[key].make(line)
+    if key == 'if':
+        nodes = [IfNode(), node]
+    elif key == 'for':
+        nodes = [node, LoopNode()]
+    else:
+        nodes = [node]
+    nodes.extend(inlineNodes)
+    return nodes
