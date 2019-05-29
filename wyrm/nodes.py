@@ -340,16 +340,18 @@ class HTMLNode(NodeChildren):
         return [doctype, open] + super().render(*contexts) + [close]
 
 @dataclass
-class MarkdownNode(NodeChildren):
+class ResourceNode(NodeChildren):
     src: Optional[Expression] = None
 
-    @staticmethod
-    def make(line):
+    @classmethod
+    def make(cls, line):
         if line:
-            return MarkdownNode(Expression.make(line))
+            return cls(src=Expression.make(line))
         else:
-            return MarkdownNode()
+            return cls()
 
+@dataclass
+class MarkdownNode(ResourceNode):
     def render(self, *contexts):
         from .template import load_file
         if self.src is None:
