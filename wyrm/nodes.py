@@ -3,7 +3,7 @@ from typing import Tuple, List, Dict, Optional
 from .expression import Expression, String
 
 ## Constants
-__all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode', 'HTMLNode', 'MarkdownNode']
+__all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode', 'HTMLNode', 'CSSNode', 'JSNode', 'MarkdownNode']
 
 ## Exceptions
 class TokenError(Exception):
@@ -349,6 +349,22 @@ class ResourceNode(NodeChildren):
             return cls(src=Expression.make(line))
         else:
             return cls()
+
+@dataclass
+class CSSNode(ResourceNode):
+    def render(self, *contexts):
+        if self.src is None:
+            return ['<style>'] + super().render(*contexts) + ['</style>']
+        else:
+            return [f'<link rel="stylesheet" type="text/css" href="{self.src.evaluate(*contexts)}.css">']
+
+@dataclass
+class JSNode(ResourceNode):
+    def render(self, *contexts):
+        if self.src is None:
+            return ['<script>'] + super().render(*contexts) + ['</script>']
+        else:
+            return [f'<script src="{self.src.evaluate(*contexts)}.js">']
 
 @dataclass
 class MarkdownNode(ResourceNode):
