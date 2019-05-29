@@ -325,7 +325,7 @@ class HTMLNode(NodeChildren):
         from .htmltag import makeAttributes
         doctype = ''
         if line[0].type == 'NUMBER':
-            doctype, line = str(line[0].value0), line[1:]
+            doctype, line = line[0].value, line[1:]
             if line[0].type == 'IDENTIFIER' and line[0].value in ('strict', 'transitional', 'frameset'):
                 doctype, line = ' '.join(doctype, line[0].value), line[1:]
             elif doctype in ('1', '4'):
