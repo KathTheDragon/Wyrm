@@ -18,6 +18,7 @@ TOKENS = {
     'UNKNOWN': r'.'
 }
 TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
+WHITESPACE_REGEX = re.compile(TOKENS['WHITESPACE'])
 INDICATOR_REGEX = re.compile(r'(?P<INDICATOR>([/%\-=:]|/!)? ?)')
 TEXT_REGEX = re.compile(fr'(?P<TEXT>{STRING}$)', flags=re.M)
 
@@ -68,6 +69,9 @@ def tokenise_string(string):
         elif type == 'SEPARATOR' and value == ':':
             if not brackets:
                 type = 'INLINE'
+                _match = WHITESPACE_REGEX.match(string, ix+1)
+                if _match is not None:
+                    ix += len(_match.group())
         elif type == 'LBRACKET':
             brackets.append(value)
         elif type == 'RBRACKET':
