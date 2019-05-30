@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from .nodes import *
 
 ## Constants
 STRING = r'([^\\\n]|\\.)*?'
@@ -127,7 +128,6 @@ def compile_tokens(tokens):
     return nodes[0]
 
 def compile_line(line):
-    from .nodes import *
     indicator, line = line[0].value, line[1:]
     for i, token in enumerate(line):
         if token.type == 'INLINE':
