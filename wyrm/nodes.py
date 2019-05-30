@@ -103,7 +103,7 @@ class CommentNode(TextNode):
 @dataclass
 class HTMLCommentNode(TextNode):
     def render(self, *contexts):
-        return ['<!--'] + super().render(*contexts) + ['-->']
+        return [''.join(['<!--'] + super().render(*contexts) + ['-->'])]
 
 @dataclass
 class HTMLTagNode(NodeChildren):
