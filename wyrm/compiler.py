@@ -130,9 +130,8 @@ def compile_tokens(tokens):
 def compile_line(line):
     indicator, line = line[0].value, line[1:]
     for i, token in enumerate(line):
-        if token.value == 'INLINE':
-            line = line[:i]
-            inlineNodes = compile_line(line[i+1:])
+        if token.type == 'INLINE':
+            line, inlineNodes = line[:i], compile_line(line[i+1:])
             break
     else:
         inlineNodes = []
