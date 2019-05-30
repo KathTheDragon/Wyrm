@@ -75,7 +75,7 @@ def popHTMLIdentifier(line):
     if line[0].type != 'IDENTIFIER':
         return '', line
     for i, token in enumerate(line):
-        if token.type == 'IDENTIFIER' and line[i-1].value == '-':
+        if token.type == 'IDENTIFIER' and (i == 0 or line[i-1].value == '-'):
             continue
         elif token.value == '-' and line[i-1].type == 'IDENTIFIER':
             continue
