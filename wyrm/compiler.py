@@ -100,7 +100,7 @@ def compile_tokens(tokens):
             lines.append([])
             continue
         lines[-1].append(token)
-    if not lines[-1]:
+    if lines[-1]:
         lines.append([])  # Ensure we end with an empty list
     # Compile the lines
     indents = [-1]
