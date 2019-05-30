@@ -1,6 +1,14 @@
+import re
 from .expression import Expression
 
 ## Constants
+TOKENS = {
+    'TAGNAME': r'^[a-zA-Z_][-\w]*',
+    'ID_SHORTCUT': r' *#[a-zA-Z][-\w]*',
+    'CLASS_SHORTCUT': r' *\.[a-zA-Z][-\w]*',
+    'UNKNOWN': r'.'
+}
+TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
 DOCTYPES = {
     '5': '<!doctype html>',
     '4 strict': '<!doctype html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
@@ -31,6 +39,25 @@ SELF_CLOSING = [
 ]
 
 ## Functions
+def tokenise(string, linenum=0, colstart=0):
+    from .compiler import Token
+    from .expression import tokenise as tokenise_expression
+    for match in TOKEN_REGEX.finditer(string):
+        type = match.lastgroup
+        value = match.group()
+        column = match.start() + colstart
+        if type == 'ID_SHORTCUT':
+            value = value.lstrip(' #')
+        elif type == 'CLASS_SHORTCUT':
+            value = value.lstrip(' .')
+        elif type == 'UNKNOWN':
+            break
+        yield Token(type, value, linenum, column)
+    else:
+        yield Token('END', '', linenum, match.end()+colstart)
+        return
+    yield from tokenise_expression(string[match.start():], linenum, match.start()+colstart)
+
 def make(line):
     # Get tag name
     _line = line  # Just in case we need to undo
