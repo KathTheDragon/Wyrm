@@ -14,7 +14,7 @@ TOKENS = {
     'RBRACKET': r'[}\])]',
     'IDENTIFIER': r'[a-zA-Z_]\w*',
     'STRING': fr'\'{STRING}\'|\"{STRING}\"',
-    'NUMBER': r'\d+\.?\d*',
+    'NUMBER': r'\d+\.?\d*|\.\d+',
     'UNKNOWN': r'.'
 }
 TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
