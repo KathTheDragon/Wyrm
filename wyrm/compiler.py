@@ -31,7 +31,7 @@ class Token:
     type: str
     value: str
     line: int
-    col: int
+    column: int
 
 ## Functions
 def tokenise_string(string):
