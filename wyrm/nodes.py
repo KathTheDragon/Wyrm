@@ -88,6 +88,8 @@ class TextNode(Node):
 
     @classmethod
     def make(cls, line):
+        if len(line) != 1:
+            raise TemplateError('text nodes can only take a single token')
         return cls(text=String(line[0].value))
 
     def render(self, *contexts):
