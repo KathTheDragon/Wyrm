@@ -119,7 +119,7 @@ def compile_tokens(tokens):
             indents.pop()
             node = nodes.pop()
             nodes[-1].append(node)
-        if indent = indents[-1]:
+        if indent == indents[-1]:
             node = nodes.pop()
             nodes[-1].append(node)
         elif not isinstance(nodes[-1], NodeChildren):
