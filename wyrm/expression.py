@@ -17,6 +17,23 @@ TOKENS = {
     'UNKNOWN': r'.'
 }
 TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()))
+KEYWORDS = [
+    'False',
+    'None',
+    'True',
+    'and',
+    'elif',
+    'else',
+    'for',
+    'if',
+    'in',
+    'is',
+    'lambda',
+    'not',
+    'only',
+    'or',
+    'with',
+]
 
 # Temp
 @dataclass
@@ -64,7 +81,8 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
             if bracket+value not in ('()', '[]', '{}'):
                 raise CompilerError(f'mismatched brackets: `{value}` @ {linenum}:{column}')
         elif type == 'IDENTIFIER':
-            pass  # Might do something later with converting these to more specific tokens, like keywords, tag names, etc.
+            if value in KEYWORDS:
+                type = 'KEYWORD'
         elif type == 'WHITESPACE':
             continue
         elif type == 'UNKNOWN':
