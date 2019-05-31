@@ -6,7 +6,8 @@ import re
 STRING = r'([^\\\n]|\\.)*?'
 TOKENS = {
     'OPERATOR': r'[-+@&|^~.]|[<>!=]?=|[*/<>]{1,2}',
-    'SEPARATOR': r'[,:]',
+    'COLON': r':',
+    'COMMA': r',',
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
     'IDENTIFIER': r'[a-zA-Z_]\w*',
@@ -51,7 +52,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         type = match.lastgroup
         value = match.group()
         column = match.start() + colstart
-        if type == 'SEPARATOR' and value == ':':
+        if type == 'COLON':
             if not brackets:  # Inline operator
                 break
         elif type == 'LBRACKET':
