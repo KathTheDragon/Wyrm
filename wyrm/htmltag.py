@@ -38,6 +38,10 @@ SELF_CLOSING = [
     'wbr'
 ]
 
+## Exceptions
+class ExpressionError(Exception):
+    pass
+
 ## Functions
 def tokenise(string, linenum=0, colstart=0):
     from .compiler import Token
@@ -60,56 +64,47 @@ def tokenise(string, linenum=0, colstart=0):
 
 def make(line):
     # Get tag name
-    _line = line  # Just in case we need to undo
-    name, line = popHTMLIdentifier(line)
-    if line[0].value == '=':
-        name, line = '', _line
-    if not name:
+    if line[0].type == 'TAGNAME':
+        name, line = line[0].value, line[1:]
+    else:
         name = 'div'
     # Get id/class shortcuts
     id = ''
     classes = []
-    while line[0].value in ('#', '.'):
-        type = line[0].value
-        value, line = popHTMLIdentifier(line[1:])
-        if type == '#':
-            id = value
+    while line:
+        if line[0].type == 'ID_SHORTCUT':
+            id, line = line[0].value, line[1:]
+        elif line[0].type == 'CLASS_SHORTCUT':
+            class_, line = line[0].value, line[1:]
+            classes.append(class_)
         else:
-            classes.append(value)
+            break
     # Get attributes
     attributes = makeAttributes(line)
     if id:
-        attributes['id'] = id
+        attributes['_id'] = id
     if classes:
-        if 'class' in attributes:
-            attributes['class'] = ' '.join([attributes['class']] + classes)
-        else:
-            attributes['class'] = ' '.join(classes)
+        attributes['_class'] = ' '.join(classes)
     return name, attributes
 
 def makeAttributes(line):
     attributes = {}
     while line:
-        attr, line = popHTMLIdentifier(line)
+        token, line = line[0], line[1:]
+        if token.type == 'END':
+            break
+        elif token.type == 'IDENTIFIER':
+            attr = token.value
+        elif token.type == 'STRING':
+            attr = token.value[1:-1]  # Unquote
+        else:
+            raise ExpressionError(f'invalid attribute name: `{token.value}` @ {token.line}:{token.column}')
         if line[0].value == '=':
-            expr, line = Expression.pop(line)
+            expr, line = Expression.pop(line[1:])
         else:
             expr = Expression(True)
         attributes[attr] = expr
     return attributes
-
-def popHTMLIdentifier(line):
-    if line[0].type != 'IDENTIFIER':
-        return '', line
-    for i, token in enumerate(line):
-        if token.type == 'IDENTIFIER' and (i == 0 or line[i-1].value == '-'):
-            continue
-        elif token.value == '-' and line[i-1].type == 'IDENTIFIER':
-            continue
-        break
-    else:
-        return ''.join(token.value for token in line), []
-    return ''.join(token.value for token in line[:i]), line[i:]
 
 def render(name, attributes, *contexts):
     for attr, expr in attributes.items():
