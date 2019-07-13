@@ -98,7 +98,6 @@ def tokenise_line(string, indicator, linenum=0, colstart=0):
 def compile_tokens(tokens):
     indents = [-1]
     nodes = [RootNode()]
-    # for line in lines:
     line = []
     for token in tokens:
         if token.type != 'NEWLINE':
