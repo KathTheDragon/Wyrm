@@ -121,13 +121,15 @@ def compile_tokens(tokens):
         else:
             indent = len(line[0].value)
             _nodes = compile_line(line[1:])
-        while indent < indents[-1]:
+        _indents = [indent]*len(_nodes)
+        while indent <= indents[-1]:
             indents.pop()
             node = nodes.pop()
             nodes[-1].append(node)
         if not isinstance(nodes[-1], NodeChildren):
             raise CompilerError(f'node {nodes[-1]} does not support children')
         nodes.extend(_nodes)
+        indents.extend(_indents)
     return nodes[0]
 
 def compile_line(line):
