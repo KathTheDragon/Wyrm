@@ -125,10 +125,7 @@ def compile_tokens(tokens):
             indents.pop()
             node = nodes.pop()
             nodes[-1].append(node)
-        if indent == indents[-1]:
-            node = nodes.pop()
-            nodes[-1].append(node)
-        elif not isinstance(nodes[-1], NodeChildren):
+        if not isinstance(nodes[-1], NodeChildren):
             raise CompilerError(f'node {nodes[-1]} does not support children')
         nodes.extend(_nodes)
     return nodes[0]
