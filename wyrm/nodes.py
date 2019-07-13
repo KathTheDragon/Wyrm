@@ -84,7 +84,7 @@ class RootNode(NodeChildren):
 # Text nodes
 @dataclass
 class TextNode(Node):
-    text: String = String()
+    text: String = String('')
 
     @classmethod
     def make(cls, line):
@@ -171,7 +171,7 @@ class ForNode(NodeChildren):
     def make(line):
         from .expression import ArgList
         for ix, token in enumerate(line):
-            if token.type == 'IDENTIFIER' and token.value == 'in':
+            if token.type == 'KEYWORD' and token.value == 'in':
                 break  # This leaves `ix` as the index of the `in` token
         else:
             raise NodeError('`for` requires the keyword `in`')
