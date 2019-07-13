@@ -11,6 +11,26 @@ SYNTAX_REGEXES = {
     'KEYWORD': re.compile(r'[a-z]+'),
     'TEXT': re.compile(r'([^\\]|\\.)*?$', flags=re.M)
 }
+NODE_DICT = {
+    '': TextNode,
+    '/': CommentNode,
+    '/!': HTMLCommentNode,
+    '%': HTMLTagNode,
+    '=': ExpressionNode,
+    'if': ConditionNode,
+    'elif': ConditionNode,
+    'else': ConditionNode,
+    'for': ForNode,
+    'empty': EmptyNode,
+    'with': WithNode,
+    'require': RequireNode,
+    'include': IncludeNode,
+    'block': BlockNode,
+    'html': HTMLNode,
+    'css': CSSNode,
+    'js': JSNode,
+    'md': MarkdownNode,
+}
 
 ## Exceptions
 class CompilerError(Exception):
@@ -125,26 +145,7 @@ def compile_line(line):
         key = indicator
     if key in ('else', 'empty') and line:
         raise TemplateError(f'`{key}` clause takes no arguments')
-    node = {
-        '': TextNode,
-        '/': CommentNode,
-        '/!': HTMLCommentNode,
-        '%': HTMLTagNode,
-        '=': ExpressionNode,
-        'if': ConditionNode,
-        'elif': ConditionNode,
-        'else': ConditionNode,
-        'for': ForNode,
-        'empty': EmptyNode,
-        'with': WithNode,
-        'require': RequireNode,
-        'include': IncludeNode,
-        'block': BlockNode,
-        'html': HTMLNode,
-        'css': CSSNode,
-        'js': JSNode,
-        'md': MarkdownNode,
-    }[key].make(line)
+    node = NODE_DICT[key].make(line)
     if key == 'if':
         nodes = [IfNode(), node]
     elif key == 'for':
