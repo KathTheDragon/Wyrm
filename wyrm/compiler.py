@@ -48,8 +48,6 @@ class Token:
 def tokenise(string):
     for linenum, line in enumerate(string.splitlines()):
         if SYNTAX_REGEXES['BLANK'].match(line) is not None:
-            yield Token('INDENT', '', linenum, 0)  # These two tokens are for temporary compatibility
-            yield Token('INDICATOR', '', linenum, 0)
             yield Token('NEWLINE', '', linenum, 0)
             continue
         match = SYNTAX_REGEXES['INDENT'].match(line)
@@ -103,7 +101,7 @@ def compile_tokens(tokens):
         if token.type != 'NEWLINE':
             line.append(token)
         else:  # End of line, compile
-            if len(line) <= 2:  # Blank line, special handling
+            if len(line) == 0:  # Blank line, special handling
                 indent = indents[-1]
                 if indent == -1:  # Leading blank line, can be ignored
                     line = []
