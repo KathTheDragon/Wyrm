@@ -96,41 +96,39 @@ def tokenise_line(string, indicator, linenum=0, colstart=0):
         yield Token('NEWLINE', '', linenum, token.column)
 
 def compile_tokens(tokens):
-    # Make the lines
-    lines = [[]]
-    for token in tokens:
-        if token.type == 'NEWLINE':
-            if lines[-1]:
-                lines.append([])
-            continue
-        lines[-1].append(token)
-    if lines[-1]:
-        lines.append([])  # Ensure we end with an empty list
-    # Compile the lines
     indents = [-1]
     nodes = [RootNode()]
-    for line in lines:
-        if len(line) == 0:  # End of template
-            indent = 0
-            _nodes = []
-        elif len(line) == 2:  # Blank line, special handling
-            indent = indents[-1]
-            if indent == -1:
-                continue  # Leading blank line, can be ignored
-            _nodes = [TextNode()]
-        else:
-            indent = len(line[0].value)
-            _nodes = compile_line(line[1:])
-        _indents = [indent]*len(_nodes)
-        while indent <= indents[-1]:
-            indents.pop()
-            node = nodes.pop()
+    # for line in lines:
+    line = []
+    for token in tokens:
+        if token.type != 'NEWLINE':
+            line.append(token)
+        else:  # End of line, compile
+            if len(line) <= 2:  # Blank line, special handling
+                indent = indents[-1]
+                if indent == -1:  # Leading blank line, can be ignored
+                    line = []
+                    continue
+                _nodes = [TextNode()]
+            else:
+                indent = len(line[0].value)
+                _nodes = compile_line(line[1:])
+            _indents = [indent]*len(_nodes)
+            while indent <= indents[-1]:
+                indents.pop()
+                node = nodes.pop()
+                nodes[-1].append(node)
+            if not isinstance(nodes[-1], NodeChildren):
+                raise CompilerError(f'node {nodes[-1]} does not support children')
+            nodes.extend(_nodes)
+            indents.extend(_indents)
+            line = []
+    while True:  # Final compression and return
+        node = nodes.pop()
+        if nodes:
             nodes[-1].append(node)
-        if not isinstance(nodes[-1], NodeChildren):
-            raise CompilerError(f'node {nodes[-1]} does not support children')
-        nodes.extend(_nodes)
-        indents.extend(_indents)
-    return nodes[0]
+        else:
+            return node
 
 def compile_line(line):
     indicator, line = line[0].value, line[1:]
