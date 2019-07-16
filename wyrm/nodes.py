@@ -188,13 +188,14 @@ class ForNode(NodeChildren):
         lines = []
         container = self.container.evaluate(*contexts)
         loop = empty = else_ = None
-        for child in self:
-            if isinstance(child, LoopNode):
+        for i, child in enumerate(self):
+            if i==0 and isinstance(child, LoopNode):
                 loop = child
-            elif isinstance(child, EmptyNode):
+            elif i==1 and isinstance(child, EmptyNode):
                 empty = child
             elif isinstance(child, ConditionNode):
                 else_ = child
+        assert loop is not None
         if container:
             length = len(container)
             if 'loop' in contexts[-1]:
