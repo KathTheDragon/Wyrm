@@ -110,6 +110,9 @@ def makeAttributes(line):
 def render(name, attributes, *contexts):
     for attr, expr in attributes.items():
         attributes[attr] = expr.evaluate(*contexts)
+    if '_class' in attributes:
+        attributes['class'] = ' '.join([attributes['class'], attributes['_class']])
+        del attributes['_class']
     attrList = [(f'{attr}={value!r}' if value is not True else attr) for attr, value in attributes.items() if value]
     if attrList:
         open = f'{name} {" ".join(attrList)}'
