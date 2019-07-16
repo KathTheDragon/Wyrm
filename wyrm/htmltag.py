@@ -82,7 +82,8 @@ def make(line):
     # Get attributes
     attributes = makeAttributes(line)
     if id:
-        attributes['_id'] = id
+        # id shortcut always overrides dynamic ids
+        attributes['id'] = id
     if classes:
         attributes['_class'] = ' '.join(classes)
     return name, attributes
