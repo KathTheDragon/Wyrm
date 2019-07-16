@@ -88,7 +88,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         elif type == 'UNKNOWN':
             if not brackets:  # Probably a newline
                 break
-            raise CompilerError(f'unknown character: `{value}` @ {linenum}:{column}')
+            raise CompilerError(f'unexpected character: `{value}` @ {linenum}:{column}')
         yield Token(type, value, linenum, column)
     else:
         if brackets:
