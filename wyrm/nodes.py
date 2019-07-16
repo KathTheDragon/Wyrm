@@ -331,12 +331,12 @@ class HTMLNode(NodeChildren):
         from .htmltag import makeAttributes
         doctype = ''
         if line[0].type == 'NUMBER':
-            doctype, line = line[0].value, line[1:]
-            if line[0].type == 'IDENTIFIER' and line[0].value in ('strict', 'transitional', 'frameset'):
-                doctype, line = ' '.join(doctype, line[0].value), line[1:]
+            doctype, ix = line[0].value, 1
+            if line[1].type == 'IDENTIFIER' and line[1].value in ('strict', 'transitional', 'frameset'):
+                doctype, ix = ' '.join(doctype, line[1].value), 2
             elif doctype in ('1', '4'):
                 doctype = ' '.join(doctype, 'strict')
-        attributes = makeAttributes(line)
+        attributes = makeAttributes(line[ix:])
         return HTMLNode(doctype=doctype, attributes=attributes)
 
     def render(self, *contexts):
