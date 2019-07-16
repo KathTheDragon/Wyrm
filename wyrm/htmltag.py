@@ -71,16 +71,17 @@ def make(line):
     # Get id/class shortcuts
     id = ''
     classes = []
-    while line:
-        if line[0].type == 'ID_SHORTCUT':
-            id, line = line[0].value, line[1:]
-        elif line[0].type == 'CLASS_SHORTCUT':
-            class_, line = line[0].value, line[1:]
-            classes.append(class_)
+    for i, token in enumerate(line):
+        if token.type == 'ID_SHORTCUT':
+            id = token.value
+        elif token.type == 'CLASS_SHORTCUT':
+            classes.append(token.value)
         else:
+            # Get attributes
+            attributes = makeAttributes(line[i:])
             break
-    # Get attributes
-    attributes = makeAttributes(line)
+    else:
+        attributes = {}
     if id:
         # id shortcut always overrides dynamic ids
         attributes['id'] = id
