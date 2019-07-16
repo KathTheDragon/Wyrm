@@ -87,7 +87,7 @@ class RootNode(NodeChildren):
 # Text nodes
 @dataclass
 class TextNode(Node):
-    text: String = String('')
+    text: String
 
     @classmethod
     def make(cls, line):
@@ -110,8 +110,8 @@ class HTMLCommentNode(TextNode):
 
 @dataclass
 class HTMLTagNode(NodeChildren):
-    name: str = ''
-    attributes: Dict[str, Expression] = field(default_factory=dict)
+    name: str
+    attributes: Dict[str, Expression]
 
     @staticmethod
     def make(line):
@@ -129,7 +129,7 @@ class HTMLTagNode(NodeChildren):
 
 @dataclass
 class ExpressionNode(Node):
-    expr: Expression = Expression()
+    expr: Expression
 
     @staticmethod
     def make(line):
@@ -150,7 +150,7 @@ class IfNode(NodeChildren):
 
 @dataclass
 class ConditionNode(NodeChildren):
-    condition: Expression = Expression()
+    condition: Expression
 
     @staticmethod
     def make(line):
@@ -167,8 +167,8 @@ class ConditionNode(NodeChildren):
 
 @dataclass
 class ForNode(NodeChildren):
-    vars: Tuple[str] = ()
-    container: Expression = ''
+    vars: Tuple[str]
+    container: Expression
 
     @staticmethod
     def make(line):
@@ -222,8 +222,8 @@ class EmptyNode(NodeChildren):
 
 @dataclass
 class WithNode(NodeChildren):
-    vars: Dict[str, Expression] = field(default_factory=dict)
-    limit_context: bool = False
+    vars: Dict[str, Expression]
+    limit_context: bool
 
     @staticmethod
     def make(line):
@@ -248,9 +248,9 @@ class WithNode(NodeChildren):
 # Command nodes
 @dataclass
 class IncludeNode(NodeChildren):
-    file: Expression = Expression()
-    vars: Dict[str, Expression] = field(default_factory=dict)
-    limit_context: bool = False
+    file: Expression
+    vars: Dict[str, Expression]
+    limit_context: bool
 
     @staticmethod
     def make(line):
@@ -285,7 +285,7 @@ class IncludeNode(NodeChildren):
 
 @dataclass
 class BlockNode(NodeChildren):
-    name: str = ''
+    name: str
 
     @staticmethod
     def make(line):
@@ -302,7 +302,7 @@ class BlockNode(NodeChildren):
 
 @dataclass
 class RequireNode(Node):
-    vars: Tuple[str] = ()
+    vars: Tuple[str]
 
     @staticmethod
     def make(line):
@@ -323,19 +323,20 @@ class RequireNode(Node):
 
 @dataclass
 class HTMLNode(NodeChildren):
-    doctype: str = '5'  # To outsource to the config
-    attributes: Dict[str, Expression] = field(default_factory=dict)
+    doctype: str
+    attributes: Dict[str, Expression]
 
     @staticmethod
     def make(line):
         from .htmltag import makeAttributes
-        doctype = ''
         if line[0].type == 'NUMBER':
             doctype, ix = line[0].value, 1
             if line[1].type == 'IDENTIFIER' and line[1].value in ('strict', 'transitional', 'frameset'):
                 doctype, ix = ' '.join(doctype, line[1].value), 2
             elif doctype in ('1', '4'):
                 doctype = ' '.join(doctype, 'strict')
+        else:
+            doctype = '5'  # To outsource to the config
         attributes = makeAttributes(line[ix:])
         return HTMLNode(doctype=doctype, attributes=attributes)
 
@@ -347,14 +348,14 @@ class HTMLNode(NodeChildren):
 
 @dataclass
 class ResourceNode(NodeChildren):
-    src: Optional[Expression] = None
+    src: Optional[Expression]
 
     @classmethod
     def make(cls, line):
         if line:
             return cls(src=Expression.make(line))
         else:
-            return cls()
+            return cls(src=None)
 
 @dataclass
 class CSSNode(ResourceNode):
