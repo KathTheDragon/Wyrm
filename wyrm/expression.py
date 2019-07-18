@@ -72,11 +72,53 @@ class Expression:
         return
 
 @dataclass
-class String(Expression):
+class Literal(Expression):
+    @classmethod
+    def make(cls, tokens):
+        name = cls.__name__.lower()
+        if len(tokens) != 1:
+            raise ExpressionError(f'{name}s can only take a single token')
+        token = tokens[0]
+        if token.type == name.upper():
+            return cls(token.value)
+        else:
+            raise ExpressionError(f'{name}s take a token of type {name.upper()!r}, not {token.type!r}')
+
+@dataclass
+class Identifier(Literal):
+    name: str
+
+    def evaluate(self, *contexts):
+        name = self.name
+        for context in contexts:
+            if name in context:
+                return context[name]
+
+re_slashes = re.compile(r'(\\+)\1')
+re_format = re.compile(r'(\\?){(.*?)}')
+
+@dataclass
+class String(Literal):
     string: str
 
     def evaluate(self, *contexts):
-        return self.string
+        strings = re_slashes.split(self.string)
+        for i, string in enumerate(strings):
+            strings[i] = re_format.sub(lambda m: string_format(m, *contexts), string)
+        return ''.join(strings)
+
+@dataclass
+class Number(Literal):
+    number: float
+
+    def __init__(self, number):
+        if '.' in number:
+            self.number = float(number)
+        else:
+            self.number = int(number)
+
+    def evaluate(self, *contexts):
+        return self.number
 
 @dataclass
 
