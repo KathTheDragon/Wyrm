@@ -280,7 +280,7 @@ class BlockNode(NodeChildren):
     @staticmethod
     def make(line):
         if line[0].type == 'IDENTIFIER':
-            return BlockNode(line[0].value)
+            return BlockNode(name=line[0].value)
 
     def render(self, *contexts):
         for context in contexts:
