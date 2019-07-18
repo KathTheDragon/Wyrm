@@ -41,6 +41,28 @@ class ExpressionError(Exception):
 
 ## Classes
 @dataclass
+class VarList:
+    vars: Tuple[str]
+
+    @staticmethod
+    def make(tokens):
+        pass
+
+    def __iter__(self):
+        return iter(self.vars)
+
+@dataclass
+class VarDict:
+    vars: Dict[str, Expression]
+
+    @staticmethod
+    def make(tokens):
+        pass
+
+    def evaluate(self, *contexts):
+        return {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
+
+@dataclass
 class Expression:
     @staticmethod
     def make(tokens):
@@ -57,13 +79,10 @@ class String(Expression):
         return self.string
 
 @dataclass
-class ArgList:
-    args: Tuple[str]
-    kwargs: Dict[str, Expression]
 
     @staticmethod
-        return ArgList([], {})
     def make(tokens):
+        pass
 
 ## Functions
 def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expression structure here

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, replace, InitVar
 from typing import Tuple, List, Dict, Optional
-from .expression import Expression, String
+from .expression import Expression, String, VarList, VarDict
 
 ## Constants
 __all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode', 'HTMLNode', 'CSSNode', 'JSNode', 'MarkdownNode']
@@ -111,7 +111,7 @@ class HTMLCommentNode(TextNode):
 @dataclass
 class HTMLTagNode(NodeChildren):
     name: str
-    attributes: Dict[str, Expression]
+    attributes: Dict[str, Expression]  # VarDict?
 
     @staticmethod
     def make(line):
@@ -167,22 +167,19 @@ class ConditionNode(NodeChildren):
 
 @dataclass
 class ForNode(NodeChildren):
-    vars: Tuple[str]
+    vars: VarList
     container: Expression
 
     @staticmethod
     def make(line):
-        from .expression import ArgList
         for ix, token in enumerate(line):
             if token.type == 'KEYWORD' and token.value == 'in':
                 break  # This leaves `ix` as the index of the `in` token
         else:
             raise NodeError('`for` requires the keyword `in`')
-        vars = ArgList.make(line[:ix])
-        if vars.kwargs:
-            raise NodeError('`for` cannot take keyword variables in the variable list')
+        vars = VarList.make(line[:ix])
         container = Expression.make(line[ix+1:])
-        return ForNode(vars=vars.args, container=container)
+        return ForNode(vars=vars, container=container)
 
     def render(self, *contexts):
         lines = []
@@ -203,7 +200,7 @@ class ForNode(NodeChildren):
             else:
                 parent = None
             for i, item in enumerate(container):
-                context = dict(zip(self.vars, item))
+                context = dict(zip(self.vars.vars, item))  # Temp until VarList supports sequence operations
                 context['loop'] = LoopVars(i, length, parent)
                 lines.extend(loop.render(context, *contexts))
             if else_ is not None:
@@ -222,24 +219,21 @@ class EmptyNode(NodeChildren):
 
 @dataclass
 class WithNode(NodeChildren):
-    vars: Dict[str, Expression]
+    vars: VarDict
     limit_context: bool
 
     @staticmethod
     def make(line):
-        from .expression import ArgList
         if line and line[0].type == 'IDENTIFIER' and line[0].value == 'only':
             line = line[1:]
             limit_context = True
         else:
             limit_context = False
-        vars = ArgList.make(line)
-        if vars.args:
-            raise NodeError('`with` takes only keyword variables')
-        return WithNode(vars=vars.kwargs, limit_context=limit_context)
+        vars = VarDict.make(line)
+        return WithNode(vars=vars, limit_context=limit_context)
 
     def render(self, *contexts):
-        context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
+        context = self.vars.evaluate(*contexts)
         if self.limit_context:
             return super().render(context)
         else:
@@ -249,12 +243,11 @@ class WithNode(NodeChildren):
 @dataclass
 class IncludeNode(NodeChildren):
     file: Expression
-    vars: Dict[str, Expression]
+    vars: VarDict
     limit_context: bool
 
     @staticmethod
     def make(line):
-        from .expression import ArgList
         for ix, token in enumerate(line):
             if token.type == 'IDENTIFIER' and token.value == 'with':
                 break  # This leaves `ix` as the index of the `with` token
@@ -264,16 +257,13 @@ class IncludeNode(NodeChildren):
         if ix is None:
             return IncludeNode(file=file)
         else:
-            try:
-                with_ = WithNode.make(line[ix+1:])
-            except NodeError:
-                raise NodeError('`include` takes only keyword variables')
+            with_ = WithNode.make(line[ix+1:])
             return IncludeNode(file=file, vars=with_.vars, limit_context=with_.limit_context)
 
     def render(self, *contexts):
         from .template import load_template
         template = load_template(self.file.evaluate(*contexts))  # Temporary call
-        context = {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
+        context = self.vars.evaluate(*contexts)
         _blocks = {}
         for block in self:
             _blocks[block.name] = block.render(*contexts)
@@ -302,15 +292,12 @@ class BlockNode(NodeChildren):
 
 @dataclass
 class RequireNode(Node):
-    vars: Tuple[str]
+    vars: VarList
 
     @staticmethod
     def make(line):
-        from .expression import ArgList
-        vars = ArgList.make(line)
-        if vars.kwargs:
-            raise NodeError('`require` cannot take keyword variables')
-        return RequireNode(vars.args)
+        vars = VarList.make(line)
+        return RequireNode(vars=vars)
 
     def render(self, *contexts):
         for var in self.vars:
@@ -324,7 +311,7 @@ class RequireNode(Node):
 @dataclass
 class HTMLNode(NodeChildren):
     doctype: str
-    attributes: Dict[str, Expression]
+    attributes: Dict[str, Expression]  # VarDict?
 
     @staticmethod
     def make(line):
