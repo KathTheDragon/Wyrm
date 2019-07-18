@@ -35,7 +35,11 @@ KEYWORDS = [
     'with',
 ]
 
-# Temp
+## Exceptions
+class ExpressionError(Exception):
+    pass
+
+## Classes
 @dataclass
 class Expression:
     @staticmethod
