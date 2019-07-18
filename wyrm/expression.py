@@ -43,7 +43,7 @@ class ExpressionError(Exception):
 @dataclass
 class Expression:
     @staticmethod
-    def make(line):
+    def make(tokens):
         return Expression()
 
     def evaluate(self, *contexts):
@@ -62,8 +62,8 @@ class ArgList:
     kwargs: Dict[str, Expression]
 
     @staticmethod
-    def make(line):
         return ArgList([], {})
+    def make(tokens):
 
 ## Functions
 def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expression structure here
