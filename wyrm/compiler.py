@@ -106,7 +106,7 @@ def compile_tokens(tokens):
                 if indent == -1:  # Leading blank line, can be ignored
                     line = []
                     continue
-                _nodes = [TextNode()]
+                _nodes = [TextNode('')]
             else:
                 indent = len(line[0].value)
                 _nodes = compile_line(line[1:])
