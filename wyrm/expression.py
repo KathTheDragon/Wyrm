@@ -5,8 +5,9 @@ import re
 ## Constants
 STRING = r'([^\\\n]|\\.)*?'
 TOKENS = {
-    'OPERATOR': r'[-+@&|^~.]|[<>!=]?=|[*/<>]{1,2}',
+    'OPERATOR': r'[-+@&|^~]|[<>!=]?=|[*/<>]{1,2}',
     'COLON': r':',
+    'DOT': r'\.',
     'COMMA': r',',
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
