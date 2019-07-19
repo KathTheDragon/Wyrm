@@ -73,7 +73,15 @@ class VarList:
 
     @staticmethod
     def make(tokens):
-        pass
+        vars = []
+        i = 0
+        for j in getCommas(tokens):
+            if j == i+1 == len(tokens):
+                raise SyntaxError(tokens[i])
+            if j == i+2 and tokens[i+1].type == 'IDENTIFIER':
+                vars.append(tokens[i+1].value)
+            else:
+                raise SyntaxError(tokens[i+1])
 
     def __iter__(self):
         return iter(self.vars)
@@ -84,7 +92,19 @@ class VarDict:
 
     @staticmethod
     def make(tokens):
-        pass
+        vars = []
+        i = 0
+        for j in getCommas(tokens):
+            if j == i+1 == len(tokens):
+                raise SyntaxError(tokens[i])
+            if tokens[i+1].type == 'IDENTIFIER':
+                key = tokens[i+1].value
+            else:
+                raise SyntaxError(tokens[i+1])
+            if not (tokens[i+2].type == 'OPERATOR' and tokens[i+2].value == '='):
+                raise SyntaxError(tokens[i+2])
+            value = Expression.make(tokens)
+            vars.append((key, value))
 
     def evaluate(self, *contexts):
         return {var: expr.evaluate(*contexts) for var, expr in self.vars}
@@ -424,7 +444,10 @@ def getCommas(tokens):
             depth += 1
         elif token.type == 'RBRACKET':
             depth -= 1
-    yield i
+    if tokens[-1].type == 'RBRACKET':
+        yield i
+    else:
+        yield i + 1
 
 def compileBinaryOps(partials, operators):
     partials = partials.copy()
