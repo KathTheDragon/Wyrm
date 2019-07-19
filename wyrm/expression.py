@@ -48,7 +48,20 @@ TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKE
 
 ## Exceptions
 class CompilerError(Exception):
-    pass
+    def __init__(self, error, value, linenum, column):
+        super().__init__(f'{error}: `{value}` @ {linenum}:{column}')
+
+class TokenError(CompilerError):
+    def __init__(self, error, token):
+        super().__init__(error, token.value, token.linenum, token.column)
+
+class UnexpectedTokenError(TokenError):
+    def __init__(self, token):
+        super().__init__('unexpected token', token)
+
+class SyntaxError(TokenError):
+    def __init__(self, token):
+        super().__init__('invalid syntax', token)
 
 class ExpressionError(Exception):
     pass
@@ -89,14 +102,14 @@ class ArgList:
         for j in getCommas(tokens):
             if j == i + 1:
                 if tokens[j].type == 'COMMA':
-                    raise CompilerError(f'invalid syntax: `{token.value}` @ {token.linenum}:{token.column}')
+                    raise SyntaxError(tokens[j]))
             else:
                 arg = compile_tokens(tokens[i:j])
                 if isinstance(arg, BinaryOp):
                     if isinstance(arg.left, Identifier):
                         kwargs.append((arg.left.name, arg.right))
                     else:
-                        raise CompilerError(f'invalid syntax: `{tokens[i].value}` @ {tokens[i].linenum}:{tokens[i].column}')
+                        raise SyntaxError(tokens[i])
                 else:
                     args.append(arg)
             i = j + 1
@@ -172,7 +185,7 @@ class Sequence(Expression):
         for j in getCommas(tokens):
             if j == i + 1:
                 if tokens[j].type == 'COMMA':
-                    raise CompilerError(f'invalid syntax: `{token.value}` @ {token.linenum}:{token.column}')
+                    raise SyntaxError(tokens[j])
                 if cls == TupleLiteral:
                     items.append(None)
             else:
@@ -281,20 +294,20 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
             brackets.append(value)
         elif type == 'RBRACKET':
             if not brackets:
-                raise CompilerError(f'unexpected bracket: `{value}` @ {linenum}:{column}')
+                raise CompilerError(f'unexpected bracket', value, linenum, column)
             bracket = brackets.pop()
             if bracket+value not in ('()', '[]', '{}'):
-                raise CompilerError(f'mismatched brackets: `{value}` @ {linenum}:{column}')
+                raise CompilerError(f'mismatched brackets', value, linenum, column)
         elif type == 'WHITESPACE':
             continue
         elif type == 'UNKNOWN':
             if not brackets:  # Probably a newline
                 break
-            raise CompilerError(f'unexpected character: `{value}` @ {linenum}:{column}')
+            raise CompilerError(f'unexpected character', value, linenum, column)
         yield Token(type, value, linenum, column)
     else:
         if brackets:
-            raise CompilerError(f'unclosed bracket `{brackets[-1]}` @ {linenum}:_')
+            raise CompilerError(f'unclosed bracket', brackets[-1], linenum, '_')
         yield Token('END', '', linenum, match.end()+colstart)
         return
     yield Token('END', '', linenum, column)
@@ -302,7 +315,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
 ## Helper Functions
 def matchBrackets(tokens):
     if tokens[0].type != 'LBRACKET':
-        raise ExpressionError(f'expected bracket at {tokens[0].linenum}:{tokens[0].column}')
+        raise TokenError('expected bracket', token)
     depth = 0
     for i, token in enumerate(tokens, 1):
         if token.type == 'LBRACKET':
@@ -311,7 +324,7 @@ def matchBrackets(tokens):
             depth -= 1
             if count == 0:
                 return i
-    raise ExpressionError(f'unmatched bracket at {tokens[0].linenum}:{tokens[0].column}')
+    raise TokenError('unmatched bracket', token)
 
 def getCommas(tokens):
     depth = 0
