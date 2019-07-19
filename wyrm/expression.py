@@ -3,21 +3,6 @@ from typing import Tuple, Dict
 import re
 
 ## Constants
-STRING = r'([^\\\n]|\\.)*?'
-TOKENS = {
-    'OPERATOR': r'[-+@&|^~]|[<>!=]?=|[*/<>]{1,2}',
-    'COLON': r':',
-    'DOT': r'\.',
-    'COMMA': r',',
-    'LBRACKET': r'[([{]',
-    'RBRACKET': r'[}\])]',
-    'IDENTIFIER': r'[a-zA-Z_]\w*',
-    'STRING': fr'\'{STRING}\'|\"{STRING}\"',
-    'NUMBER': r'\d+\.?\d*',
-    'WHITESPACE': r' +',
-    'UNKNOWN': r'.'
-}
-TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()))
 KEYWORDS = [
     'False',
     'None',
@@ -33,10 +18,33 @@ KEYWORDS = [
 KEYWORD_OPERATORS = [
     'and',
     'in',
+    'is not',
     'is',
+    'not in',
     'not',
     'or',
 ]
+UNARY_OPERATORS = [
+    '+',
+    '-',
+    '~',
+    'not'
+]
+STRING = r'([^\\\n]|\\.)*?'
+TOKENS = {
+    'OPERATOR': r'[-+@&|^~:]|[<>!=]?=|[*/<>]{1,2}|'+'|'.join(KEYWORD_OPERATORS),
+    'DOT': r'\.',
+    'COMMA': r',',
+    'LBRACKET': r'[([{]',
+    'RBRACKET': r'[}\])]',
+    'KEYWORD': '|'.join(KEYWORDS),
+    'IDENTIFIER': r'[a-zA-Z_]\w*',
+    'STRING': fr'\'{STRING}\'|\"{STRING}\"',
+    'NUMBER': r'\d+\.?\d*',
+    'WHITESPACE': r' +',
+    'UNKNOWN': r'.'
+}
+TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()))
 
 ## Exceptions
 class CompilerError(Exception):
@@ -140,7 +148,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         type = match.lastgroup
         value = match.group()
         column = match.start() + colstart
-        if type == 'COLON':
+        if type == 'OPERATOR' and value == ':':
             if not brackets:  # Inline operator
                 break
         elif type == 'LBRACKET':
@@ -151,11 +159,6 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
             bracket = brackets.pop()
             if bracket+value not in ('()', '[]', '{}'):
                 raise CompilerError(f'mismatched brackets: `{value}` @ {linenum}:{column}')
-        elif type == 'IDENTIFIER':
-            if value in KEYWORDS:
-                type = 'KEYWORD'
-            elif value in KEYWORD_OPERATORS:
-                type = 'OPERATOR'
         elif type == 'WHITESPACE':
             continue
         elif type == 'UNKNOWN':
