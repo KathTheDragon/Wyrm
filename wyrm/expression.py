@@ -177,6 +177,24 @@ class Number(Literal):
         return self.number
 
 @dataclass
+class Boolean(Literal):
+    truth: bool
+
+    def __init__(self, truth):
+        if truth == 'True':
+            self.value == True
+        elif truth == 'False':
+            self.value == False
+
+    def evaluate(*contexts):
+        return self.truth
+
+@dataclass
+class NoneSingleton(Literal):
+    def evaluate(*contexts):
+        return None
+
+@dataclass
 class Sequence(Expression):
     @classmethod
     def make(cls, tokens):
@@ -355,6 +373,11 @@ def compile_tokens(tokens):
                         partials.append(Subscripted(partials.pop(), TupleLiteral.make(tokens[i:j])))
                     else:
                         raise SyntaxError(token)
+            elif token.type == 'KEYWORD':
+                if token.value in ('True', 'False'):
+                    partials.append(Boolean(token.value))
+                elif token.value == 'None':
+                    partials.append(NoneType())
             elif token.type == 'IDENTIFIER':
                 partials.append(Identifier(token.value))
             elif token.type == 'STRING':
