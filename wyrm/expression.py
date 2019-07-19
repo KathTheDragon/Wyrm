@@ -145,7 +145,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
             brackets.append(value)
         elif type == 'RBRACKET':
             if not brackets:
-                raise CompilerError(f'unmatched bracket: `{value}` @ {linenum}:{column}')
+                raise CompilerError(f'unexpected bracket: `{value}` @ {linenum}:{column}')
             bracket = brackets.pop()
             if bracket+value not in ('()', '[]', '{}'):
                 raise CompilerError(f'mismatched brackets: `{value}` @ {linenum}:{column}')
