@@ -312,6 +312,81 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         return
     yield Token('END', '', linenum, column)
 
+def compile_tokens(tokens):
+    if not tokens:
+        return None
+    partials = []
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+        if expr is None:
+            j = i + 1
+            if token.type == 'OPERATOR':
+                # Sanity check syntax
+                if token.value in ('+', '-'):  # Unary and binary
+                    pass
+                elif token.value in ('~', 'not'):  # Unary only
+                    if i != 0 and tokens[i-1].type != 'OPERATOR':
+                        raise SyntaxError(token)
+                else:  # Binary only
+                    if i == 0 or tokens[i-1].type == 'OPERATOR':
+                        raise SyntaxError(token)
+                partials.append(token.value)
+            elif token.type == 'DOT':
+                if tokens[i-1].type == 'OPERATOR' or tokens[i+1].type != 'IDENTIFIER':
+                    raise SyntaxError(token)
+                partials.append(Dotted(partials.pop(), token.value))
+            elif token.type == 'LBRACKET':
+                j = i + matchBrackets(tokens[i:])
+                if i == 0 or tokens[i-1].type == 'OPERATOR':  # Literal
+                    if token.value == '(':
+                        cls = TupleLiteral
+                    elif token.value == '[':
+                        cls = ListLiteral
+                    elif token.value == '{':
+                        cls = DictLiteral
+                    else:  # Unexpected token
+                        raise UnexpectedTokenError(token)
+                    partials.append(cls.make(tokens[i:j]))
+                else:
+                    if token.value == '(':  # Argument list
+                        partials.append(Call(partials.pop(), ArgList.make(tokens[i:j])))
+                    elif token.value == '[':  # Subscript
+                        partials.append(Subscripted(partials.pop(), TupleLiteral.make(tokens[i:j])))
+                    else:
+                        raise SyntaxError(token)
+            elif token.type == 'IDENTIFIER':
+                partials.append(Identifier(token.value))
+            elif token.type == 'STRING':
+                partials.append(String(token.value))
+            elif token.type == 'NUMBER':
+                partials.append(Number(token.value))
+            else:  # Unexpected token
+                raise UnexpectedTokenError(token)
+        i = j
+    # Unary ops
+    for i in reversed(range(len(partials))):
+        if partials[i] in UNARY_OPERATORS and (i == 0 or isinstance(partials[i-1], str)):
+            partials[i:i+2] = [UnaryOp(partials[i], partials[i+1])]
+    # Power op - is right-associative so must be done this way
+    for i in reversed(range(len(partials))):
+        if partials[i] == '**':
+            partials[i-1:i+2] = [BinaryOp('**', partials[i-1], partials[i+1])]
+    partials = compileBinaryOps(partials, ('*', '@', '/', '//', '%'))  # Multiplicative ops
+    partials = compileBinaryOps(partials, ('+', '-'))  # Additive ops
+    partials = compileBinaryOps(partials, ('<<', '>>'))  # Bitshift ops
+    partials = compileBinaryOps(partials, ('&',))  # Bitwise and
+    partials = compileBinaryOps(partials, ('^',))  # Bitwise xor
+    partials = compileBinaryOps(partials, ('|',))  # Bitwise or
+    partials = compileBinaryOps(partials, ('in', 'not in', 'is', 'is not', '<', '<=', '>', '>=', '!=', '=='))  # Comparison
+    partials = compileBinaryOps(partials, ('and',))  # and
+    partials = compileBinaryOps(partials, ('or',))  # or
+    # if-else (maybe)
+    # lambda (maybe)
+    if len(partials) != 1:
+        raise ExpressionError('invalid expression')
+    return partials[0]
+
 ## Helper Functions
 def matchBrackets(tokens):
     if tokens[0].type != 'LBRACKET':
@@ -336,3 +411,13 @@ def getCommas(tokens):
         elif token.type == 'RBRACKET':
             depth -= 1
     yield i
+
+def compileBinaryOps(partials, operators):
+    partials = partials.copy()
+    i = 0
+    while i < len(partials):
+        if partials[i] in operators:
+            partials[i-1:i+2] = [BinaryOp(partials[i], partials[i-1], partials[i+1])]
+        else:
+            i += 1
+    return partials
