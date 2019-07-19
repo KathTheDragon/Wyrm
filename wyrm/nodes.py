@@ -224,7 +224,7 @@ class WithNode(NodeChildren):
 
     @staticmethod
     def make(line):
-        if line and line[0].type == 'IDENTIFIER' and line[0].value == 'only':
+        if line and line[0].type == 'KEYWORD' and line[0].value == 'only':
             line = line[1:]
             limit_context = True
         else:
@@ -249,7 +249,7 @@ class IncludeNode(NodeChildren):
     @staticmethod
     def make(line):
         for ix, token in enumerate(line):
-            if token.type == 'IDENTIFIER' and token.value == 'with':
+            if token.type == 'KEYWORD' and token.value == 'with':
                 break  # This leaves `ix` as the index of the `with` token
         else:
             ix = None
