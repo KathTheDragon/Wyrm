@@ -37,6 +37,9 @@ KEYWORDS = [
 ]
 
 ## Exceptions
+class CompilerError(Exception):
+    pass
+
 class ExpressionError(Exception):
     pass
 
