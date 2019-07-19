@@ -48,7 +48,7 @@ class ExpressionError(Exception):
 ## Classes
 @dataclass
 class VarList:
-    vars: Tuple[str]
+    vars: Tuple[str, ...]
 
     @staticmethod
     def make(tokens):
@@ -59,14 +59,14 @@ class VarList:
 
 @dataclass
 class VarDict:
-    vars: Dict[str, Expression]
+    vars: Tuple[Tuple[str, Expression], ...]
 
     @staticmethod
     def make(tokens):
         pass
 
     def evaluate(self, *contexts):
-        return {var: expr.evaluate(*contexts) for var, expr in self.vars.items()}
+        return {var: expr.evaluate(*contexts) for var, expr in self.vars}
 
 @dataclass
 class Expression:
