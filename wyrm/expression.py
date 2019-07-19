@@ -142,7 +142,10 @@ class Sequence(Expression):
         i = 1
         for j in getCommas(tokens):
             if j == i + 1:
-                items.append(None)
+                if tokens[j].type == 'COMMA':
+                    raise CompilerError(f'invalid syntax: `{token.value}` @ {token.linenum}:{token.column}')
+                if cls == TupleLiteral:
+                    items.append(None)
             else:
                 items.append(compile_tokens(tokens[i:j]))
             i = j + 1
