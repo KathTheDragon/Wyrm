@@ -204,6 +204,45 @@ class DictLiteral(Sequence):
         return {key.evaluate(*contexts): value.evaluate(*contexts) for key, value in self.items}
 
 @dataclass
+class Compound(Expression):
+    pass
+
+@dataclass
+class Dotted(Compound):
+    expr: Expression
+    attr: str
+
+    def evaluate(self, *contexts):
+        expr = self.expr.evaluate(*contexts)
+        if not hasattr(expr, self.attr):
+            raise ExpressionError(f'{expr!r} has no attribute {attr!r}')
+        return getattr(expr, self.attr)
+
+@dataclass
+class Subscripted(Compound):
+    expr: Expression
+    subscript: Expression
+
+    def evaluate(self, *contexts):
+        expr = self.expr.evaluate(*contexts)
+        if not hasattr(expr, '__getitem__'):
+            raise ExpressionError(f'{expr!r} is not subscriptable')
+            subscript = self.subscript.evaluate(*contexts)
+        return expr[subscript]
+
+@dataclass
+class Call(Compound):
+    name: Union[Identifier, Compound]
+    args: ArgList
+
+    def evaluate(self, *contexts):
+        name = self.name.evaluate(*contexts)
+        if not hasattr(name, '__call__'):
+            raise ExpressionError(f'{name!r} is not callable')
+        args, kwargs = self.args.evaluate(*contexts)
+        return name(*args, **kwargs)
+
+@dataclass
 class Operator(Expression):
     op: str
 
