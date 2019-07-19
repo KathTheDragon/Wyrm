@@ -298,3 +298,28 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         yield Token('END', '', linenum, match.end()+colstart)
         return
     yield Token('END', '', linenum, column)
+
+## Helper Functions
+def matchBrackets(tokens):
+    if tokens[0].type != 'LBRACKET':
+        raise ExpressionError(f'expected bracket at {tokens[0].linenum}:{tokens[0].column}')
+    depth = 0
+    for i, token in enumerate(tokens, 1):
+        if token.type == 'LBRACKET':
+            depth += 1
+        elif token.type == 'RBRACKET':
+            depth -= 1
+            if count == 0:
+                return i
+    raise ExpressionError(f'unmatched bracket at {tokens[0].linenum}:{tokens[0].column}')
+
+def getCommas(tokens):
+    depth = 0
+    for i, token in enumerate(tokens):
+        if token.type == 'COMMA' and depth == 1:
+            yield i
+        elif token.type == 'LBRACKET':
+            depth += 1
+        elif token.type == 'RBRACKET':
+            depth -= 1
+    yield i
