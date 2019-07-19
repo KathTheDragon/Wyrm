@@ -171,6 +171,30 @@ class DictLiteral(Sequence):
     def evaluate(self, *contexts):
         return {key.evaluate(*contexts): value.evaluate(*contexts) for key, value in self.items}
 
+@dataclass
+class Operator(Expression):
+    op: str
+
+@dataclass
+class UnaryOp(Operator):
+    arg: Expression
+
+    def evaluate(*contexts):
+        op = self.op
+        arg = self.arg.evaluate(*contexts)
+        return eval(f'{op} {arg!r}')
+
+@dataclass
+class BinaryOp(Operator):
+    left: Expression
+    right: Expression
+
+    def evaluate(*contexts):
+        op = self.op
+        left = self.left.evaluate(*contexts)
+        right = self.right.evaluate(*contexts)
+        return eval(f'{left!r} {op} {right!r}')
+
 ## Functions
 def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expression structure here
     from .compiler import Token, CompilerError
