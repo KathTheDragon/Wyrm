@@ -77,6 +77,35 @@ class VarDict:
         return {var: expr.evaluate(*contexts) for var, expr in self.vars}
 
 @dataclass
+class ArgList:
+    args: ListLiteral
+    kwargs: VarDict
+
+    @staticmethod
+    def make(tokens):
+        args = []
+        kwargs = []
+        i = 1
+        for j in getCommas(tokens):
+            if j == i + 1:
+                if tokens[j].type == 'COMMA':
+                    raise CompilerError(f'invalid syntax: `{token.value}` @ {token.linenum}:{token.column}')
+            else:
+                arg = compile_tokens(tokens[i:j])
+                if isinstance(arg, BinaryOp):
+                    if isinstance(arg.left, Identifier):
+                        kwargs.append((arg.left.name, arg.right))
+                    else:
+                        raise CompilerError(f'invalid syntax: `{tokens[i].value}` @ {tokens[i].linenum}:{tokens[i].column}')
+                else:
+                    args.append(arg)
+            i = j + 1
+        return ArgList(ListLiteral(tuple(args)), VarDict(tuple(kwargs)))
+
+    def evaluate(*contexts):
+        return self.args.evaluate(*contexts), self.kwargs.evaluate(*contexts)
+
+@dataclass
 class Expression:
     @staticmethod
     def make(tokens):
