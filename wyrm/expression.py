@@ -22,18 +22,20 @@ KEYWORDS = [
     'False',
     'None',
     'True',
-    'and',
     'elif',
     'else',
     'for',
     'if',
+    # 'lambda',
+    'only',
+    'with',
+]
+KEYWORD_OPERATORS = [
+    'and',
     'in',
     'is',
-    'lambda',
     'not',
-    'only',
     'or',
-    'with',
 ]
 
 ## Exceptions
@@ -152,6 +154,8 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         elif type == 'IDENTIFIER':
             if value in KEYWORDS:
                 type = 'KEYWORD'
+            elif value in KEYWORD_OPERATORS:
+                type = 'OPERATOR'
         elif type == 'WHITESPACE':
             continue
         elif type == 'UNKNOWN':

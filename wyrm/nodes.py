@@ -173,7 +173,7 @@ class ForNode(NodeChildren):
     @staticmethod
     def make(line):
         for ix, token in enumerate(line):
-            if token.type == 'KEYWORD' and token.value == 'in':
+            if token.type == 'OPERATOR' and token.value == 'in':
                 break  # This leaves `ix` as the index of the `in` token
         else:
             raise NodeError('`for` requires the keyword `in`')
