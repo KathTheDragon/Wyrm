@@ -122,23 +122,14 @@ class ArgList:
 class Expression:
     @staticmethod
     def make(tokens):
-        return Expression()
+        return compile_tokens(tokens)
 
     def evaluate(self, *contexts):
         return
 
 @dataclass
 class Literal(Expression):
-    @classmethod
-    def make(cls, tokens):
-        name = cls.__name__.lower()
-        if len(tokens) != 1:
-            raise ExpressionError(f'{name}s can only take a single token')
-        token = tokens[0]
-        if token.type == name.upper():
-            return cls(token.value)
-        else:
-            raise ExpressionError(f'{name}s take a token of type {name.upper()!r}, not {token.type!r}')
+    pass
 
 @dataclass
 class Identifier(Literal):
