@@ -148,6 +148,28 @@ class Sequence(Expression):
             i = j + 1
         return cls(tuple(items))
 
+@dataclass
+class TupleLiteral(Sequence):
+    items: Tuple[Expression, ...]
+
+    def evaluate(self, *contexts):
+        if len(self.items) == 1:
+            return self.items[0].evaluate(*contexts)
+        return tuple(item.evaluate(*contexts) for item in self.items if item is not None)
+
+@dataclass
+class ListLiteral(Sequence):
+    items: Tuple[Expression, ...]
+
+    def evaluate(self, *contexts):
+        return [item.evaluate(*contexts) for item in self.items]
+
+@dataclass
+class DictLiteral(Sequence):
+    items: Tuple[Tuple[Expression, Expression], ...]
+
+    def evaluate(self, *contexts):
+        return {key.evaluate(*contexts): value.evaluate(*contexts) for key, value in self.items}
 
 ## Functions
 def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expression structure here
