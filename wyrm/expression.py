@@ -135,10 +135,19 @@ class Number(Literal):
         return self.number
 
 @dataclass
+class Sequence(Expression):
+    @classmethod
+    def make(cls, tokens):
+        items = []
+        i = 1
+        for j in getCommas(tokens):
+            if j == i + 1:
+                items.append(None)
+            else:
+                items.append(compile_tokens(tokens[i:j]))
+            i = j + 1
+        return cls(tuple(items))
 
-    @staticmethod
-    def make(tokens):
-        pass
 
 ## Functions
 def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expression structure here
