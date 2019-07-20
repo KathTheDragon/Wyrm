@@ -154,8 +154,9 @@ class ConditionNode(NodeChildren):
 
     @staticmethod
     def make(line):
+        from .expression import Boolean
         if not line:
-            return ConditionNode(condition=Expression(True))
+            return ConditionNode(condition=Boolean(True))
         else:
             return ConditionNode(condition=Expression.make(line))
 
