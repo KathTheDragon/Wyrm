@@ -71,17 +71,24 @@ class ExpressionError(Exception):
 class VarList:
     vars: Tuple[str, ...]
 
+    def __init__(self, vars):
+        self.vars = tuple(vars)
+
     @staticmethod
     def make(tokens):
         vars = []
         i = 0
         for j in getCommas(tokens):
-            if j == i+1 == len(tokens):
-                raise SyntaxError(tokens[i])
-            if j == i+2 and tokens[i+1].type == 'IDENTIFIER':
-                vars.append(tokens[i+1].value)
+            if j == i:
+                raise SyntaxError(tokens[i]))
             else:
-                raise SyntaxError(tokens[i+1])
+                var = compile_tokens(tokens[i:j])
+                if isinstance(var, Identifier):
+                    var.append(var.name)
+                else:
+                    raise SyntaxError(tokens[i]))
+            i = j+1
+        return VarList(vars=vars)
 
     def __iter__(self):
         return iter(self.vars)
@@ -90,21 +97,27 @@ class VarList:
 class VarDict:
     vars: Tuple[Tuple[str, Expression], ...]
 
+    def __init__(self, vars):
+        self.vars = tuple(vars)
+
     @staticmethod
     def make(tokens):
         vars = []
         i = 0
         for j in getCommas(tokens):
-            if j == i+1 == len(tokens):
-                raise SyntaxError(tokens[i])
-            if tokens[i+1].type == 'IDENTIFIER':
-                key = tokens[i+1].value
+            if j == i:
+                raise SyntaxError(tokens[i]))
             else:
-                raise SyntaxError(tokens[i+1])
-            if not (tokens[i+2].type == 'OPERATOR' and tokens[i+2].value == '='):
-                raise SyntaxError(tokens[i+2])
-            value = Expression.make(tokens)
-            vars.append((key, value))
+                var = compile_tokens(tokens[i:j])
+                if isinstance(var, BinaryOp) and var.op == '=':
+                    if isinstance(var.left, Identifier):
+                        vars.append((var.left.name, var.right))
+                    else:
+                        raise SyntaxError(tokens[i])
+                else:
+                    raise SyntaxError(tokens[i])
+            i = j+1
+        return VarDict(vars=vars)
 
     def evaluate(self, *contexts):
         return {var: expr.evaluate(*contexts) for var, expr in self.vars}
@@ -120,20 +133,20 @@ class ArgList:
         kwargs = []
         i = 1
         for j in getCommas(tokens):
-            if j == i + 1:
+            if j == i:
                 if tokens[j].type == 'COMMA':
                     raise SyntaxError(tokens[j]))
             else:
                 arg = compile_tokens(tokens[i:j])
-                if isinstance(arg, BinaryOp):
+                if isinstance(arg, BinaryOp) and arg.op == '=':
                     if isinstance(arg.left, Identifier):
                         kwargs.append((arg.left.name, arg.right))
                     else:
                         raise SyntaxError(tokens[i])
                 else:
                     args.append(arg)
-            i = j + 1
-        return ArgList(ListLiteral(tuple(args)), VarDict(tuple(kwargs)))
+            i = j+1
+        return ArgList(args=ListLiteral(args), kwargs=VarDict(kwargs))
 
     def evaluate(*contexts):
         return self.args.evaluate(*contexts), self.kwargs.evaluate(*contexts)
