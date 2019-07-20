@@ -244,12 +244,17 @@ class NoneSingleton(Literal):
 
 @dataclass
 class Sequence(Expression):
+    items: tuple
+
+    def __init__(self, items):
+        self.items = tuple(items)
+
     @classmethod
     def make(cls, tokens):
         items = []
         i = 1
         for j in getCommas(tokens):
-            if j == i + 1:
+            if j == i:
                 if tokens[j].type == 'COMMA':
                     raise SyntaxError(tokens[j])
                 if cls == TupleLiteral:
