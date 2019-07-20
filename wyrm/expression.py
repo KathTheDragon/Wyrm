@@ -452,7 +452,12 @@ def compile_tokens(tokens):
     partials = compileBinaryOps(partials, ('in', 'not in', 'is', 'is not', '<', '<=', '>', '>=', '!=', '=='))  # Comparison
     partials = compileBinaryOps(partials, ('and',))  # and
     partials = compileBinaryOps(partials, ('or',))  # or
-    partials = compileBinaryOps(partials, ('=', ':'))  # Pairing 'ops'
+    # 'Pairing' ops - `=` does not feature normally and `:` requires special handling
+    for i in reversed(range(len(partials))):
+        if partials[i] == '=':
+            partials[i-1:i+2] = [BinaryOp('=', partials[i-1], partials[i+1])]
+        elif partials[i] == ':':
+            partials[i-1:i+2] = [(partials[i-1], partials[i+1])]
     # if-else (maybe)
     # lambda (maybe)
     if len(partials) != 1:
