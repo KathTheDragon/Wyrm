@@ -427,6 +427,11 @@ def compile_tokens(tokens):
             partials.append(String(eval(token.value)))
         elif token.type == 'NUMBER':
             partials.append(Number(eval(token.value)))
+        elif token.type == 'END':
+            if j == len(tokens):
+                break
+            else:
+                raise UnexpectedTokenError(tokens[j])
         else:  # Unexpected token
             raise UnexpectedTokenError(token)
         i = j
