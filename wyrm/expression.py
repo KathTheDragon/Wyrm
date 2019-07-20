@@ -215,24 +215,12 @@ class String(Literal):
 class Number(Literal):
     number: float
 
-    def __init__(self, number):
-        if '.' in number:
-            self.number = float(number)
-        else:
-            self.number = int(number)
-
     def evaluate(self, *contexts):
         return self.number
 
 @dataclass
 class Boolean(Literal):
     truth: bool
-
-    def __init__(self, truth):
-        if truth == 'True':
-            self.value == True
-        elif truth == 'False':
-            self.value == False
 
     def evaluate(*contexts):
         return self.truth
@@ -428,15 +416,15 @@ def compile_tokens(tokens):
                         raise SyntaxError(token)
             elif token.type == 'KEYWORD':
                 if token.value in ('True', 'False'):
-                    partials.append(Boolean(token.value))
+                    partials.append(Boolean(eval(token.value)))
                 elif token.value == 'None':
                     partials.append(NoneType())
             elif token.type == 'IDENTIFIER':
                 partials.append(Identifier(token.value))
             elif token.type == 'STRING':
-                partials.append(String(token.value))
+                partials.append(String(eval(token.value)))
             elif token.type == 'NUMBER':
-                partials.append(Number(token.value))
+                partials.append(Number(eval(token.value)))
             else:  # Unexpected token
                 raise UnexpectedTokenError(token)
         i = j
