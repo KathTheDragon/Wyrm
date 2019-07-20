@@ -474,7 +474,7 @@ def matchBrackets(tokens):
             depth += 1
         elif token.type == 'RBRACKET':
             depth -= 1
-            if count == 0:
+            if depth == 0:
                 return i
     raise TokenError('unmatched bracket', token)
 
