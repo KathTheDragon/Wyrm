@@ -381,55 +381,54 @@ def compile_tokens(tokens):
     i = 0
     while i < len(tokens):
         token = tokens[i]
-        if expr is None:
-            j = i + 1
-            if token.type == 'OPERATOR':
-                # Sanity check syntax
-                if token.value in ('+', '-'):  # Unary and binary
-                    pass
-                elif token.value in ('~', 'not'):  # Unary only
-                    if i != 0 and tokens[i-1].type != 'OPERATOR':
-                        raise SyntaxError(token)
-                else:  # Binary only
-                    if i == 0 or tokens[i-1].type == 'OPERATOR':
-                        raise SyntaxError(token)
-                partials.append(token.value)
-            elif token.type == 'DOT':
-                if tokens[i-1].type == 'OPERATOR' or tokens[i+1].type != 'IDENTIFIER':
-                    raise SyntaxError(token)
-                partials.append(Dotted(partials.pop(), token.value))
-            elif token.type == 'LBRACKET':
-                j = i + matchBrackets(tokens[i:])
-                if i == 0 or tokens[i-1].type == 'OPERATOR':  # Literal
-                    if token.value == '(':
-                        cls = TupleLiteral
-                    elif token.value == '[':
-                        cls = ListLiteral
-                    elif token.value == '{':
-                        cls = DictLiteral
-                    else:  # Unexpected token
-                        raise UnexpectedTokenError(token)
-                    partials.append(cls.make(tokens[i:j]))
-                else:
-                    if token.value == '(':  # Argument list
-                        partials.append(Call(partials.pop(), ArgList.make(tokens[i:j])))
-                    elif token.value == '[':  # Subscript
-                        partials.append(Subscripted(partials.pop(), TupleLiteral.make(tokens[i:j])))
-                    else:
-                        raise SyntaxError(token)
-            elif token.type == 'KEYWORD':
-                if token.value in ('True', 'False'):
-                    partials.append(Boolean(eval(token.value)))
-                elif token.value == 'None':
-                    partials.append(NoneType())
-            elif token.type == 'IDENTIFIER':
-                partials.append(Identifier(token.value))
-            elif token.type == 'STRING':
-                partials.append(String(eval(token.value)))
-            elif token.type == 'NUMBER':
-                partials.append(Number(eval(token.value)))
-            else:  # Unexpected token
-                raise UnexpectedTokenError(token)
+        j = i + 1
+        if token.type == 'OPERATOR':
+            # Sanity check syntax
+            if token.value in ('+', '-'):  # Unary and binary
+                pass
+            elif token.value in ('~', 'not'):  # Unary only
+                if i != 0 and tokens[i-1].type != 'OPERATOR':
+                    raise SyntaxError(token)#
+            else:  # Binary only
+                if i == 0 or tokens[i-1].type == 'OPERATOR':
+                    raise SyntaxError(token)#
+            partials.append(token.value)
+        elif token.type == 'DOT':
+            if tokens[i-1].type == 'OPERATOR' or tokens[i+1].type != 'IDENTIFIER':
+                raise SyntaxError(token)
+            partials.append(Dotted(partials.pop(), token.value))
+        elif token.type == 'LBRACKET':
+            j = i + matchBrackets(tokens[i:])
+            if i == 0 or tokens[i-1].type == 'OPERATOR':  # Literal
+                if token.value == '(':
+                    cls = TupleLiteral
+                elif token.value == '[':
+                    cls = ListLiteral
+                elif token.value == '{':
+                    cls = DictLiteral
+                else:  # Unexpected token
+                    raise UnexpectedTokenError(token)
+                partials.append(cls.make(tokens[i:j]))
+            else:
+                if token.value == '(':  # Argument list
+                    partials.append(Call(partials.pop(), ArgList.make(tokens[i:j])))
+                elif token.value == '[':  # Subscript
+                    partials.append(Subscripted(partials.pop(), TupleLiteral.make(tokens[i:j])))
+                else:#
+                    raise SyntaxError(token)#
+        elif token.type == 'KEYWORD':
+            if token.value in ('True', 'False'):
+                partials.append(Boolean(eval(token.value)))
+            elif token.value == 'None':
+                partials.append(NoneType())
+        elif token.type == 'IDENTIFIER':
+            partials.append(Identifier(token.value))
+        elif token.type == 'STRING':
+            partials.append(String(eval(token.value)))
+        elif token.type == 'NUMBER':
+            partials.append(Number(eval(token.value)))
+        else:  # Unexpected token
+            raise UnexpectedTokenError(token)
         i = j
     # Unary ops
     for i in reversed(range(len(partials))):
