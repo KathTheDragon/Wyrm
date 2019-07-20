@@ -9,7 +9,7 @@ TBW
 :html 5 lang="en"
     % head
         % meta charset="utf-8"
-        % meta name="viewport" content="width=device-width, initial-scale=1"
+        % meta name="viewport", content="width=device-width, initial-scale=1"
         % title: Wyrm Sample
         :css 'easy_css'
         :js
@@ -195,9 +195,9 @@ HTML tags are the mainstay of HTML (and XML) documents, and it is important to f
 
 The tag name is followed by class and id shortcuts. These follow the CSS practice of specifying class names with a leading `.`, and id names with a leading `#`. These may optionally be preceded by a single space, but there must be no spaces after the `.` or `#`, or within the class or id names. Class and id names may contain any of the valid identifier characters, as well as `-`. If class or id shortcuts are given, and only if at least one is given, then the tag name may be omitted, and `div` will be assumed, due to the tag's high frequency in HTML.
 
-The attributes are the last thing in the tag, and are given as a space-separated list of `{name}={value}` pairs, where the name is either a valid identifier, or (uniquely to HTML attributes) a string containing a sequence of identifiers joined by `-`, and the value is an expression that must evaluate to a string, an integer, or a boolean. A value evaluating to `False` will be treated as though the attribute was not included at all, while a value evaluating to `True` is equivalent to giving just the attribute name (thus mirroring HTML's binary attributes) as well as setting the attribute value to the same as the attribute name, but as a string (thus conforming to XHTML). If the `id` attribute is given here, it will be overridden by an id shortcut, while if the `class` attribute is given, it will be appended to by any class shortcuts.
+The attributes are the last thing in the tag, and are given as a comma-separated list of `{name}={value}` pairs, where the name is either a valid identifier, or (uniquely to HTML attributes) a string containing a sequence of identifiers joined by `-`, and the value is an expression that must evaluate to a string, an integer, or a boolean. A value evaluating to `False` will be treated as though the attribute was not included at all, while a value evaluating to `True` is equivalent to giving just the attribute name (thus mirroring HTML's binary attributes) as well as setting the attribute value to the same as the attribute name, but as a string (thus conforming to XHTML). If the `id` attribute is given here, it will be overridden by an id shortcut, while if the `class` attribute is given, it will be appended to by any class shortcuts.
 ```
-% input #searchbox.roundable-border type="text" name="search" required
+% input #searchbox.roundable-border type="text", name="search", required
 ```
 
 ### Inlining blocks
@@ -217,4 +217,3 @@ It frequently occurs that a block consists of exactly one line (which may or may
             text.
 ```
 While the use of `:` for inlining could potentially be confused with its use as a line indicator, in practice the two can always be told apart, as at the beginning of a line, `:` is always a line indicator, and in the middle of a line (outside of any brackets), a single `:` is always the inlining operator, and a double `:` (possibly separated by whitespace) is always the inlining operator followed by a line indicator.
-

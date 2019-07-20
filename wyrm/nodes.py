@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, replace, InitVar
 from typing import Tuple, List, Dict, Optional
-from .expression import Expression, String, VarList, VarDict
+from .expression import Expression, String, VarList, VarDict, AttrDict
 
 ## Constants
 __all__ = ['NodeChildren', 'RootNode', 'TextNode', 'CommentNode', 'HTMLCommentNode', 'HTMLTagNode', 'ExpressionNode', 'IfNode', 'ConditionNode', 'ForNode', 'LoopNode', 'EmptyNode', 'WithNode', 'IncludeNode', 'BlockNode', 'RequireNode', 'HTMLNode', 'CSSNode', 'JSNode', 'MarkdownNode']
@@ -111,7 +111,7 @@ class HTMLCommentNode(TextNode):
 @dataclass
 class HTMLTagNode(NodeChildren):
     name: str
-    attributes: Dict[str, Expression]  # VarDict?
+    attributes: AttrDict
 
     @staticmethod
     def make(line):
@@ -309,9 +309,9 @@ class RequireNode(Node):
         return []
 
 @dataclass
-class HTMLNode(NodeChildren):
+class HTMLNode(NodeChildren):  # Maybe subclass HTMLNode?
     doctype: str
-    attributes: Dict[str, Expression]  # VarDict?
+    attributes: AttrDict
 
     @staticmethod
     def make(line):

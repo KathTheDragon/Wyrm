@@ -63,6 +63,7 @@ def tokenise(string, linenum=0, colstart=0):
     yield from tokenise_expression(string[match.start():], linenum, match.start()+colstart)
 
 def make(line):
+    from .expression import String
     # Get tag name
     if line[0].type == 'TAGNAME':
         name, line = line[0].value, line[1:]
@@ -81,36 +82,20 @@ def make(line):
             attributes = makeAttributes(line[i:])
             break
     else:
-        attributes = {}
+        attributes = makeAttributes([])
     if id:
         # id shortcut always overrides dynamic ids
-        attributes['id'] = id
+        attributes.vars += (('id', String(id)),)
     if classes:
-        attributes['_class'] = ' '.join(classes)
+        attributes.vars += (('_class', String(' '.join(classes))),)
     return name, attributes
 
 def makeAttributes(line):
-    attributes = {}
-    while line:
-        token, line = line[0], line[1:]
-        if token.type == 'END':
-            break
-        elif token.type == 'IDENTIFIER':
-            attr = token.value
-        elif token.type == 'STRING':
-            attr = token.value[1:-1]  # Unquote
-        else:
-            raise ExpressionError(f'invalid attribute name: `{token.value}` @ {token.line}:{token.column}')
-        if line[0].value == '=':
-            expr, line = Expression.pop(line[1:])
-        else:
-            expr = Expression(True)
-        attributes[attr] = expr
-    return attributes
+    from .expression import AttrDict
+    return AttrDict.make(line)
 
 def render(name, attributes, *contexts):
-    for attr, expr in attributes.items():
-        attributes[attr] = expr.evaluate(*contexts)
+    attributes = attributes.evaluate(*contexts)
     if '_class' in attributes:
         attributes['class'] = ' '.join([attributes['class'], attributes['_class']])
         del attributes['_class']
