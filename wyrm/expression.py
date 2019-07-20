@@ -374,6 +374,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
     yield Token('END', '', linenum, column)
 
 def compile_tokens(tokens):
+    tokens = list(tokens)
     if not tokens:
         return None
     partials = []
