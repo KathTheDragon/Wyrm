@@ -140,7 +140,7 @@ class AttrDict(VarDict):
                 if isinstance(name, Identifier):
                     attributes.append((name.name, value))
                 elif isinstance(name, String):
-                    attributes.append((eval(name.string), value))
+                    attributes.append((name.string, value))
                 else:
                     raise SyntaxError(tokens[i])
             i = j+1
