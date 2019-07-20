@@ -32,12 +32,12 @@ UNARY_OPERATORS = [
 ]
 STRING = r'([^\\\n]|\\.)*?'
 TOKENS = {
-    'OPERATOR': r'[-+@&|^~:]|[<>!=]?=|[*/<>]{1,2}|'+'|'.join(KEYWORD_OPERATORS),
+    'OPERATOR': r'[-+@&|^~:]|[<>!=]?=|[*/<>]{1,2}|('+'|'.join(KEYWORD_OPERATORS)+r')(?!\w)',
     'DOT': r'\.',
     'COMMA': r',',
     'LBRACKET': r'[([{]',
     'RBRACKET': r'[}\])]',
-    'KEYWORD': '|'.join(KEYWORDS),
+    'KEYWORD': '('+'|'.join(KEYWORDS)+r')(?!\w)',
     'IDENTIFIER': r'[a-zA-Z_]\w*',
     'STRING': fr'\'{STRING}\'|\"{STRING}\"',
     'NUMBER': r'\d+\.?\d*',
