@@ -144,7 +144,7 @@ class IfNode(NodeChildren):
     def render(self, *contexts):
         for child in self:
             lines = child.render(*contexts)
-            if lines:
+            if isinstance(lines, list):
                 return lines
         return []
 
@@ -164,7 +164,7 @@ class ConditionNode(NodeChildren):
         if self.condition.evaluate(*contexts):
             return super().render(*contexts)
         else:
-            return []
+            return ()
 
 @dataclass
 class ForNode(NodeChildren):
