@@ -457,6 +457,7 @@ def compile_tokens(tokens):
     partials = compileBinaryOps(partials, ('in', 'not in', 'is', 'is not', '<', '<=', '>', '>=', '!=', '=='))  # Comparison
     partials = compileBinaryOps(partials, ('and',))  # and
     partials = compileBinaryOps(partials, ('or',))  # or
+    partials = compileBinaryOps(partials, ('=', ':'))  # Pairing 'ops'
     # if-else (maybe)
     # lambda (maybe)
     if len(partials) != 1:
