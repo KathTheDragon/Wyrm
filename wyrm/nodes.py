@@ -282,6 +282,8 @@ class BlockNode(NodeChildren):
     def make(line):
         if line[0].type == 'IDENTIFIER':
             return BlockNode(name=line[0].value)
+        else:
+            raise NodeError('block nodes take a single unquoted string')
 
     def render(self, *contexts):
         for context in contexts:
