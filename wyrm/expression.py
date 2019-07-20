@@ -479,6 +479,8 @@ def matchBrackets(tokens):
     raise TokenError('unmatched bracket', token)
 
 def getCommas(tokens):
+    if not tokens:
+        return
     depth = 0
     for i, token in enumerate(tokens):
         if token.type == 'COMMA' and depth == 1:
