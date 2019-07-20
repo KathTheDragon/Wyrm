@@ -95,7 +95,7 @@ class VarList:
 
 @dataclass
 class VarDict:
-    vars: Tuple[Tuple[str, Expression], ...]
+    vars: Tuple[Tuple[str, 'Expression'], ...]
 
     def __init__(self, vars):
         self.vars = tuple(vars)
@@ -148,7 +148,7 @@ class AttrDict(VarDict):
 
 @dataclass
 class ArgList:
-    args: ListLiteral
+    args: 'ListLiteral'
     kwargs: VarDict
 
     @staticmethod
