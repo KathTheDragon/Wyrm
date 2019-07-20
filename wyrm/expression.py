@@ -123,6 +123,30 @@ class VarDict:
         return {var: expr.evaluate(*contexts) for var, expr in self.vars}
 
 @dataclass
+class AttrDict(VarDict):
+    @staticmethod
+    def make(tokens):
+        attributes = []
+        i = 0
+        for j in getCommas(tokens):
+            if j == i:
+                raise SyntaxError(tokens[j]))
+            else:
+                attr = Expression.make(tokens[i:j])
+                if isinstance(attr, BinaryOp) and attr.op == '=':
+                    name, value = attr.left, attr.right
+                else:
+                    name, value = attr, Boolean(True)
+                if isinstance(name, Identifier):
+                    attributes.append((name.name, value))
+                elif isinstance(name, String):
+                    attributes.append((eval(name.string), value))
+                else:
+                    raise SyntaxError(tokens[i])
+            i = j+1
+        return AttrDict(vars=attributes)
+
+@dataclass
 class ArgList:
     args: ListLiteral
     kwargs: VarDict
