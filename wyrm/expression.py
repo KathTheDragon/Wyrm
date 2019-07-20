@@ -485,14 +485,18 @@ def getCommas(tokens):
     if not tokens:
         return
     depth = 0
+    if tokens[0].type == 'LBRACKET':
+        _depth = 1
+    else:
+        _depth = 0
     for i, token in enumerate(tokens):
-        if token.type == 'COMMA' and depth == 1:
+        if token.type == 'COMMA' and depth == _depth:
             yield i
         elif token.type == 'LBRACKET':
             depth += 1
         elif token.type == 'RBRACKET':
             depth -= 1
-    if tokens[-1].type == 'RBRACKET':
+    if _depth and tokens[-1].type == 'RBRACKET':
         yield i
     else:
         yield i + 1
