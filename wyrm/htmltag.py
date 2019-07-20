@@ -64,6 +64,7 @@ def tokenise(string, linenum=0, colstart=0):
 
 def make(line):
     from .expression import String
+    line = list(line)
     # Get tag name
     if line[0].type == 'TAGNAME':
         name, line = line[0].value, line[1:]
