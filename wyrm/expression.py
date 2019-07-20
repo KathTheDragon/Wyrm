@@ -252,7 +252,7 @@ class Sequence(Expression):
             i = j + 1
         return cls(tuple(items))
 
-@dataclass
+@dataclass(init=False)
 class TupleLiteral(Sequence):
     items: Tuple[Expression, ...]
 
@@ -261,14 +261,14 @@ class TupleLiteral(Sequence):
             return self.items[0].evaluate(*contexts)
         return tuple(item.evaluate(*contexts) for item in self.items if item is not None)
 
-@dataclass
+@dataclass(init=False)
 class ListLiteral(Sequence):
     items: Tuple[Expression, ...]
 
     def evaluate(self, *contexts):
         return [item.evaluate(*contexts) for item in self.items]
 
-@dataclass
+@dataclass(init=False)
 class DictLiteral(Sequence):
     items: Tuple[Tuple[Expression, Expression], ...]
 
