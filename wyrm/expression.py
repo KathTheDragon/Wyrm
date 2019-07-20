@@ -343,6 +343,9 @@ class BinaryOp(Operator):
 ## Functions
 def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expression structure here
     from .compiler import Token, CompilerError
+    if not string:
+        yield Token('END', '', linenum, colstart)
+        return
     brackets = []
     for match in TOKEN_REGEX.finditer(string):
         type = match.lastgroup
