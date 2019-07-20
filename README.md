@@ -18,7 +18,7 @@ TBW
         % h1: Examples
         % p: Inline the contents of tags, and other blocks.
 
-        / Write comments that won't show up in the output
+        // Write comments that won't show up in the output
         /! And comments that will!
 
         Plaintext is easy to write, but if you need to start a line with a reserved character...
@@ -60,7 +60,7 @@ The second exception is that when there are multiple consecutive lines of text, 
 ```
 This line has no leading whitespace.
     But this one has four spaces.
-/ This comment interrupts the block of text
+// This comment interrupts the block of text
 \    This line also starts with four spaces.
     So does this one.
         But this one starts with eight.
@@ -177,11 +177,11 @@ While the values of expressions can be displayed via interpolating into plaintex
 % a href=link_target: = link_name
 ```
 
-### Comments `/`
+### Comments `//`
 While many languages have both line and block comments, Wyrm only has line comments for hiding text from the rendered output. In order to hide blocks of text, each line must be commented out. Additionally, Wyrm doesn't have inline comments - each comment must be on its own line. Examples:
 ```
-/ This line is not displayed
-This line is displayed / And so is this
+// This line is not displayed
+This line is displayed // And so is this
 ```
 
 ### HTML Comments `/!`

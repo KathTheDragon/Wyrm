@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from .nodes import *
 
 ## Constants
-INDICATOR = r'([-=/%:]|/!|) ?'
+INDICATOR = r'([-=%:]|/[/!]|) ?'
 SYNTAX_REGEXES = {
     'BLANK': re.compile(r'^ *$', flags=re.M),
     'INDENT': re.compile(fr'^( *){INDICATOR}', flags=re.M),
