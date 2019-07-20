@@ -171,7 +171,7 @@ After the `for` loop completes, the `else` clause, if provided, will be displaye
 - with wordlist=lang.word_set.all()
 ```
 
-### Output code `=`
+### Expressions `=`
 While the values of expressions can be displayed via interpolating into plaintext, the preferred way to display just the value of a single expression, and nothing else, is to directly output it using the `=` line indicator. This evaluates whatever is to the right as an expression, and displays it. A typical use is to fill the contents of a tag:
 ```
 % a href=link_target: = link_name
