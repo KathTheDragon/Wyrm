@@ -319,14 +319,14 @@ class HTMLNode(NodeChildren):  # Maybe subclass HTMLNode?
     @staticmethod
     def make(line):
         from .htmltag import makeAttributes
-        if line[0].type == 'NUMBER':
+        if line and line[0].type == 'NUMBER':
             doctype, ix = line[0].value, 1
             if line[1].type == 'IDENTIFIER' and line[1].value in ('strict', 'transitional', 'frameset'):
                 doctype, ix = ' '.join(doctype, line[1].value), 2
             elif doctype in ('1', '4'):
                 doctype = ' '.join(doctype, 'strict')
         else:
-            doctype = '5'  # To outsource to the config
+            doctype, ix = '5', 0  # To outsource to the config
         attributes = makeAttributes(line[ix:])
         return HTMLNode(doctype=doctype, attributes=attributes)
 
