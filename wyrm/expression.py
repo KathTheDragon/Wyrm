@@ -80,13 +80,13 @@ class VarList:
         i = 0
         for j in getCommas(tokens):
             if j == i:
-                raise SyntaxError(tokens[i]))
+                raise SyntaxError(tokens[i])
             else:
                 var = compile_tokens(tokens[i:j])
                 if isinstance(var, Identifier):
                     var.append(var.name)
                 else:
-                    raise SyntaxError(tokens[i]))
+                    raise SyntaxError(tokens[i])
             i = j+1
         return VarList(vars=vars)
 
@@ -106,7 +106,7 @@ class VarDict:
         i = 0
         for j in getCommas(tokens):
             if j == i:
-                raise SyntaxError(tokens[i]))
+                raise SyntaxError(tokens[i])
             else:
                 var = compile_tokens(tokens[i:j])
                 if isinstance(var, BinaryOp) and var.op == '=':
@@ -130,7 +130,7 @@ class AttrDict(VarDict):
         i = 0
         for j in getCommas(tokens):
             if j == i:
-                raise SyntaxError(tokens[j]))
+                raise SyntaxError(tokens[i])
             else:
                 attr = Expression.make(tokens[i:j])
                 if isinstance(attr, BinaryOp) and attr.op == '=':
@@ -159,7 +159,7 @@ class ArgList:
         for j in getCommas(tokens):
             if j == i:
                 if tokens[j].type == 'COMMA':
-                    raise SyntaxError(tokens[j]))
+                    raise SyntaxError(tokens[i])
             else:
                 arg = compile_tokens(tokens[i:j])
                 if isinstance(arg, BinaryOp) and arg.op == '=':
