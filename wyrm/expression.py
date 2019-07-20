@@ -336,6 +336,8 @@ class BinaryOp(Operator):
         op = self.op
         left = self.left.evaluate(*contexts)
         right = self.right.evaluate(*contexts)
+        if op == '=':
+            raise ExpressionError(f'invalid operation: {op}')
         return eval(f'{left!r} {op} {right!r}')
 
 ## Functions
