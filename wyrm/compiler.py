@@ -41,7 +41,7 @@ class CompilerError(Exception):
 class Token:
     type: str
     value: str
-    line: int
+    linenum: int
     column: int
 
 ## Functions
