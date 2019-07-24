@@ -46,16 +46,37 @@ class Token:
 
 ## Functions
 def tokenise(string):
+    textindent = ''
+    intext = False
     for linenum, line in enumerate(string.splitlines()):
         if SYNTAX_REGEXES['BLANK'].match(line) is not None:
             yield Token('NEWLINE', '', linenum, 0)
             continue
         match = SYNTAX_REGEXES['INDENT'].match(line)
-        yield Token('INDENT', match.group(1), linenum, match.start(1))
+        indent = match.group(1)
+        indentcolumn = match.start(1)
         indicator = match.group(2)
-        yield Token('INDICATOR', indicator, linenum, match.start(2))
+        indicatorcolumn = match.start(2)
         column = match.end()
+        if indicator == '':  # This line is text
+            if intext:  # Already in text block
+                if lastindent in indent:  # This line hasn't dedented
+                    offset = len(indent) - len(lastindent)
+                    indent = textindent
+                    indicatorcolumn -= offset
+                    column -= offset
+                else:  # Dedented, treat like new text block
+                    textindent = indent
+            else:  # Entering text block
+                intext = True
+                textindent = indent
+        elif intext:
+            intext = False
+        yield Token('INDENT', indent, linenum, indentcolumn)
+        yield Token('INDICATOR', indicator, linenum, indicatorcolumn)
         yield from tokenise_line(line[column:], indicator, linenum, column)
+        lastindent = indent
+        lastindicator = indicator
 
 def tokenise_line(string, indicator, linenum=0, colstart=0):
     from .htmltag import tokenise as tokenise_html
