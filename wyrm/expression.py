@@ -199,7 +199,7 @@ class Identifier(Literal):
                 return context[name]
 
 re_slashes = re.compile(r'(\\+)\1')
-re_format = re.compile(r'(\\?){(.*?)}')
+re_format = re.compile(r'(?<!\\){(.+?)}')  # Used to target valid brackets for substitution
 
 @dataclass
 class String(Literal):
