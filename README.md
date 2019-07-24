@@ -48,11 +48,11 @@ This line displays exactly as written.
 ```
 There are several exceptions to this generalisation.
 
-Firstly, pairs of curly brackets `{...}` evaluate their contents as an expression, and interpolate the result. In order to display literal brackets, simply escape the opening bracket with a backslash: `\{`. An opening bracket without a closing bracket on the same line, however, never needs escaping. Examples:
+Firstly, pairs of curly brackets `{...}` evaluate their contents as an expression, and interpolate the result. In order to display literal brackets, simply escape the opening bracket with a backslash: `\{`. Empty brackets, as well as an opening bracket without a closing bracket on the same line, however, never need escaping. Examples:
 ```
 This line displays the contents of the {variable}.
-This line does \{not}.
-Nor do these {lines
+This line displays the \{brackets} literally.
+So do {} these {lines
 }.
 ```
 
