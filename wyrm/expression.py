@@ -208,8 +208,8 @@ class String(Literal):
     def evaluate(self, *contexts):
         strings = re_slashes.split(self.string)
         for i, string in enumerate(strings):
-            strings[i] = re_format.sub(lambda m: string_format(m, *contexts), string)
         return ''.join(strings)
+            strings[i] = re_format.sub(lambda m: Identifier(m[2]).evaluate(*contexts), string)
 
 @dataclass
 class Number(Literal):
