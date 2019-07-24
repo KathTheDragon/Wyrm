@@ -31,6 +31,10 @@ UNARY_OPERATORS = [
     'not'
 ]
 STRING = r'([^\\\n]|\\.)*?'
+STRING_ESCAPES = {
+    r'\t': '\t',
+    r'\n': '\n',
+}
 TOKENS = {
     'OPERATOR': r'[-+@&|^~:]|[<>!=]?=|[*/<>]{1,2}|('+'|'.join(KEYWORD_OPERATORS)+r')(?!\w)',
     'DOT': r'\.',
@@ -198,8 +202,9 @@ class Identifier(Literal):
             if name in context:
                 return context[name]
 
-re_slashes = re.compile(r'(\\+)\1')
+re_slashes = re.compile(r'((?:\\\\)+)')  # Used to split the string on even-length runs of slashes
 re_format = re.compile(r'(?<!\\){(.+?)}')  # Used to target valid brackets for substitution
+re_escape = re.compile(r'\\(.)')  # Used to delete the slash in escape sequences
 
 @dataclass
 class String(Literal):
@@ -208,8 +213,11 @@ class String(Literal):
     def evaluate(self, *contexts):
         strings = re_slashes.split(self.string)
         for i, string in enumerate(strings):
-        return ''.join(strings)
             strings[i] = re_format.sub(lambda m: Identifier(m[2]).evaluate(*contexts), string)
+        string = ''.join(strings)
+        for escape, char in STRING_ESCAPES.items():
+            string = string.replace(escape, char)
+        return re_escape.sub(r'\1', string)
 
 @dataclass
 class Number(Literal):
