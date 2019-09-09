@@ -5,11 +5,11 @@ from .nodes import *
 ## Constants
 INDICATOR = r'([-=%:]|/[/!]|) ?'
 SYNTAX_REGEXES = {
-    'BLANK': re.compile(r'^ *$', flags=re.M),
-    'INDENT': re.compile(fr'^( *){INDICATOR}', flags=re.M),
+    'BLANK': re.compile(r'^ *$'),
+    'INDENT': re.compile(fr'^( *){INDICATOR}'),
     'INLINE': re.compile(fr': *{INDICATOR}'),
     'KEYWORD': re.compile(r'[a-z]+'),
-    'TEXT': re.compile(r'([^\\]|\\.)*?$', flags=re.M)
+    'TEXT': re.compile(r'([^\\]|\\.)*?$')
 }
 NODE_DICT = {
     '': TextNode,

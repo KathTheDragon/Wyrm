@@ -8,7 +8,7 @@ TOKENS = {
     'CLASS_SHORTCUT': r' *\.[a-zA-Z][-\w]*',
     'UNKNOWN': r'.'
 }
-TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()), flags=re.M)
+TOKEN_REGEX = re.compile('|'.join(f'(?P<{type}>{regex})' for type, regex in TOKENS.items()))
 DOCTYPES = {
     '5': '<!doctype html>',
     '4 strict': '<!doctype html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
