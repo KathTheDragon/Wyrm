@@ -45,7 +45,7 @@ class ExpressionError(Exception):
 ## Functions
 def tokenise(string, linenum=0, colstart=0):
     from .compiler import Token
-    from .expression import tokenise as tokenise_expression
+    from .expression import tokenise as tokeniseExpression
     for match in TOKEN_REGEX.finditer(string):
         type = match.lastgroup
         value = match.group()
@@ -60,7 +60,7 @@ def tokenise(string, linenum=0, colstart=0):
     else:
         yield Token('END', '', linenum, match.end()+colstart)
         return
-    yield from tokenise_expression(string[match.start():], linenum, match.start()+colstart)
+    yield from tokeniseExpression(string[match.start():], linenum, match.start()+colstart)
 
 def make(line):
     from .expression import String

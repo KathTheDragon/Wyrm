@@ -74,20 +74,20 @@ def tokenise(string):
             intext = False
         yield Token('INDENT', indent, linenum, indentcolumn)
         yield Token('INDICATOR', indicator, linenum, indicatorcolumn)
-        yield from tokenise_line(line[column:], indicator, linenum, column)
+        yield from tokeniseLine(line[column:], indicator, linenum, column)
         lastindent = indent
         lastindicator = indicator
 
-def tokenise_line(string, indicator, linenum=0, colstart=0):
-    from .htmltag import tokenise as tokenise_html
-    from .expression import tokenise as tokenise_expression
+def tokeniseLine(string, indicator, linenum=0, colstart=0):
+    from .htmltag import tokenise as tokeniseHtml
+    from .expression import tokenise as tokeniseExpression
     if indicator in ('', '/', '/!'):
         match = SYNTAX_REGEXES['TEXT'].match(string)
         yield Token('TEXT', match.group(), linenum, match.start()+colstart)
         yield Token('NEWLINE', '', linenum, match.end()+colstart)
         return
     elif indicator == '%':
-        for token in tokenise_html(string, linenum, colstart):
+        for token in tokeniseHtml(string, linenum, colstart):
             if token.type == 'END':
                 break
             yield token
@@ -98,7 +98,7 @@ def tokenise_line(string, indicator, linenum=0, colstart=0):
             match = SYNTAX_REGEXES['KEYWORD'].match(string)
             yield Token('KEYWORD', match.group(), linenum, match.start()+colstart)
             column = match.end()
-        for token in tokenise_expression(string[column:], linenum, column+colstart):
+        for token in tokeniseExpression(string[column:], linenum, column+colstart):
             if token.type == 'END':
                 break
             yield token
@@ -130,7 +130,7 @@ def compile(string):
                 _nodes = [TextNode('')]
             else:
                 indent = len(line[0].value)
-                _nodes = compile_line(line[1:])
+                _nodes = compileLine(line[1:])
             _indents = [indent]*len(_nodes)
             while indent <= indents[-1]:
                 indents.pop()
@@ -148,11 +148,11 @@ def compile(string):
         else:
             return node
 
-def compile_line(tokens):
+def compileLine(tokens):
     indicator, line = tokens[0].value, tokens[1:]
     for i, token in enumerate(line):
         if token.type == 'INLINE':
-            line, inlineNodes = line[:i], compile_line(line[i+1:])
+            line, inlineNodes = line[:i], compileLine(line[i+1:])
             break
     else:
         inlineNodes = []

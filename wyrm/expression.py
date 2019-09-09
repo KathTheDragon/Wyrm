@@ -86,7 +86,7 @@ class VarList:
             if j == i:
                 raise SyntaxError(tokens[i])
             else:
-                var = compile_tokens(tokens[i:j])
+                var = compileTokens(tokens[i:j])
                 if isinstance(var, Identifier):
                     vars.append(var.name)
                 else:
@@ -112,7 +112,7 @@ class VarDict:
             if j == i:
                 raise SyntaxError(tokens[i])
             else:
-                var = compile_tokens(tokens[i:j])
+                var = compileTokens(tokens[i:j])
                 if isinstance(var, BinaryOp) and var.op == '=':
                     if isinstance(var.left, Identifier):
                         vars.append((var.left.name, var.right))
@@ -165,7 +165,7 @@ class ArgList:
                 if tokens[j].type == 'COMMA':
                     raise SyntaxError(tokens[i])
             else:
-                arg = compile_tokens(tokens[i:j])
+                arg = compileTokens(tokens[i:j])
                 if isinstance(arg, BinaryOp) and arg.op == '=':
                     if isinstance(arg.left, Identifier):
                         kwargs.append((arg.left.name, arg.right))
@@ -183,7 +183,7 @@ class ArgList:
 class Expression:
     @classmethod
     def make(cls, tokens):
-        expr = compile_tokens(tokens)
+        expr = compileTokens(tokens)
         if cls == Expression or isinstance(expr, cls):
             return expr
         else:
@@ -260,7 +260,7 @@ class Sequence(Expression):
                 if cls == TupleLiteral:
                     items.append(None)
             else:
-                items.append(compile_tokens(tokens[i:j]))
+                items.append(compileTokens(tokens[i:j]))
             i = j + 1
         return cls(tuple(items))
 
@@ -388,7 +388,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         return
     yield Token('END', '', linenum, column)
 
-def compile_tokens(tokens):
+def compileTokens(tokens):
     tokens = list(tokens)
     if not tokens:
         return None
