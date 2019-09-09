@@ -181,9 +181,13 @@ class ArgList:
 
 @dataclass
 class Expression:
-    @staticmethod
-    def make(tokens):
-        return compile_tokens(tokens)
+    @classmethod
+    def make(cls, tokens):
+        expr = compile_tokens(tokens)
+        if cls == Expression or isinstance(expr, cls):
+            return expr
+        else:
+            raise ExpressionError(f'expression is not of type {cls.__name__}')
 
     def evaluate(self, *contexts):
         return
