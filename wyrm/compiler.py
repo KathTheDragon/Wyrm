@@ -114,11 +114,11 @@ def tokenise_line(string, indicator, linenum=0, colstart=0):
     else:
         yield Token('NEWLINE', '', linenum, token.column)
 
-def compile_tokens(tokens):
+def compile(string):
     indents = [-1]
     nodes = [RootNode()]
     line = []
-    for token in tokens:
+    for token in tokenise(string):
         if token.type != 'NEWLINE':
             line.append(token)
         else:  # End of line, compile
