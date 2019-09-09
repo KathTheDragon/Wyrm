@@ -88,7 +88,7 @@ class VarList:
             else:
                 var = compile_tokens(tokens[i:j])
                 if isinstance(var, Identifier):
-                    var.append(var.name)
+                    vars.append(var.name)
                 else:
                     raise SyntaxError(tokens[i])
             i = j+1
