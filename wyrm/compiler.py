@@ -148,8 +148,8 @@ def compile(string):
         else:
             return node
 
-def compile_line(line):
-    indicator, line = line[0].value, line[1:]
+def compile_line(tokens):
+    indicator, line = tokens[0].value, tokens[1:]
     for i, token in enumerate(line):
         if token.type == 'INLINE':
             line, inlineNodes = line[:i], compile_line(line[i+1:])
