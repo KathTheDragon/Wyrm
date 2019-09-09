@@ -478,7 +478,7 @@ def compile_tokens(tokens):
 ## Helper Functions
 def matchBrackets(tokens):
     if tokens[0].type != 'LBRACKET':
-        raise TokenError('expected bracket', token)
+        raise TokenError('expected bracket', tokens[0])
     depth = 0
     for i, token in enumerate(tokens, 1):
         if token.type == 'LBRACKET':
@@ -487,7 +487,7 @@ def matchBrackets(tokens):
             depth -= 1
             if depth == 0:
                 return i
-    raise TokenError('unmatched bracket', token)
+    raise TokenError('unmatched bracket', tokens[0])
 
 def getCommas(tokens):
     if not tokens:
