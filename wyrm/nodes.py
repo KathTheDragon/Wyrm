@@ -7,7 +7,7 @@ __all__ = [
     'NodeChildren',
     'RootNode',
     'TextNode',
-    'CommentNode',
+    'WyrmCommentNode',
     'HTMLCommentNode',
     'HTMLTagNode',
     'ExpressionNode',
@@ -114,24 +114,51 @@ class RootNode(NodeChildren):
 class TextNode(Node):
     text: String
 
-    @classmethod
-    def make(cls, line):
+    @staticmethod
+    def make(line):
         if len(line) != 1:
             raise TemplateError('text nodes can only take a single token')
-        return cls(text=String(line[0].value))
+        return TextNode(text=String(line[0].value))
 
     def render(self, *contexts):
         return [self.text.evaluate(*contexts)]
 
 @dataclass
-class CommentNode(TextNode):
+class CommentNode(NodeChildren):
+    comment: String = String('')
+
+    def append(self, value):
+        if self.comment.string:
+            raise NodeError('comment nodes may not have children if they have a comment string')
+        else:
+            super().append(value)
+
+    def extend(self, value):
+        if self.comment.string:
+            raise NodeError('comment nodes may not have children if they have a comment string')
+        else:
+            super().extend(value)
+
+    @classmethod
+    def make(cls, line):
+        if not line:
+            return cls()
+        if len(line) != 1:
+            raise TemplateError('comment nodes can only take a single token')
+        return cls(comment=String(line[0].value))
+
+@dataclass
+class WyrmCommentNode(CommentNode):
     def render(self, *contexts):
         return []
 
 @dataclass
-class HTMLCommentNode(TextNode):
+class HTMLCommentNode(CommentNode):
     def render(self, *contexts):
-        return [''.join(['<!--'] + super().render(*contexts) + ['-->'])]
+        if self.comment:
+            return [f'<!-- {self.comment} -->']
+        else:
+            return ['<!--'] + super().render(*contexts) + ['-->']
 
 @dataclass
 class HTMLTagNode(NodeChildren):

@@ -13,7 +13,7 @@ SYNTAX_REGEXES = {
 }
 NODE_DICT = {
     '': TextNode,
-    '//': CommentNode,
+    '//': WyrmCommentNode,
     '/!': HTMLCommentNode,
     '%': HTMLTagNode,
     '=': ExpressionNode,
