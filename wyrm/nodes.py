@@ -44,10 +44,10 @@ class Node:
         return cls.__name__
 
     def append(self, value):
-        raise NodeError('node cannot take children')
+        raise NodeError(f'{self!s} cannot take children')
 
     def extend(self, value):
-        raise NodeError('node cannot take children')
+        raise NodeError(f'{self!s} cannot take children')
 
     @classmethod
     def make(cls, line):
