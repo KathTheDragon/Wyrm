@@ -79,7 +79,7 @@ class NodeChildren(Node):
         del self.children[key]
 
     def __iter__(self):
-        iter(self.children)
+        yield from self.children
 
     def __reversed__(self):
         reversed(self.children)
