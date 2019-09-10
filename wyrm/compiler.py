@@ -110,7 +110,7 @@ def tokeniseLine(string, indicator, linenum=0, colstart=0):
         indicator = match.group(1)
         column = match.end()
         yield Token('INDICATOR', indicator, linenum, match.start(1)+colstart)
-        yield from tokenise_line(string[column:], indicator, linenum, column+colstart)
+        yield from tokeniseLine(string[column:], indicator, linenum, column+colstart)
     else:
         yield Token('NEWLINE', '', linenum, token.column)
 
