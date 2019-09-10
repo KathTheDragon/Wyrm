@@ -133,6 +133,11 @@ def compile(string):
                 _nodes = compileLine(line[1:])
             _indents = [indent]*len(_nodes)
             while indent <= indents[-1]:
+                if isinstance(_nodes[0], (EmptyNode, ConditionNode)) and isinstance(nodes[-1], (IfNode, ForNode)):
+                    if indent == indents[-1]:
+                        break
+                    else:
+                        raise CompilerError(f'unexpected {_nodes[0]}')
                 indents.pop()
                 node = nodes.pop()
                 nodes[-1].append(node)
