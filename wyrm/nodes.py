@@ -245,7 +245,7 @@ class ForNode(NodeChildren):
         assert loop is not None
         if container:
             length = len(container)
-            if 'loop' in contexts[-1]:
+            if contexts and 'loop' in contexts[-1]:
                 parent = contexts[-1]['loop']
             else:
                 parent = None
