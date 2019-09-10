@@ -95,7 +95,7 @@ class VarList:
         return VarList(vars=vars)
 
     def __iter__(self):
-        return iter(self.vars)
+        yield from self.vars
 
 @dataclass
 class VarDict:
