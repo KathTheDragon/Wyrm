@@ -217,7 +217,7 @@ class String(Literal):
     def evaluate(self, *contexts):
         strings = re_slashes.split(self.string)
         for i, string in enumerate(strings):
-            strings[i] = re_format.sub(lambda m: Identifier(m[2]).evaluate(*contexts), string)
+            strings[i] = re_format.sub(lambda m: str(compile(m[1]).evaluate(*contexts)), string)
         string = ''.join(strings)
         for escape, char in STRING_ESCAPES.items():
             string = string.replace(escape, char)
@@ -387,6 +387,9 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         yield Token('END', '', linenum, match.end()+colstart)
         return
     yield Token('END', '', linenum, column)
+
+def compile(string):
+    return compileTokens(tokenise(string))
 
 def compileTokens(tokens):
     tokens = list(tokens)
