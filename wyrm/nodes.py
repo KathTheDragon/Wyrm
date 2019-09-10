@@ -58,10 +58,7 @@ class Node:
 
 @dataclass
 class NodeChildren(Node):
-    children: List[Node] = field(init=False)
-
-    def __post_init__(self):
-        self.children = []
+    children: List[Node] = field(default_factory=list, init=False)
 
     def __len__(self):
         return len(self.children)
