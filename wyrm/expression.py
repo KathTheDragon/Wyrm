@@ -176,7 +176,7 @@ class ArgList:
             i = j+1
         return ArgList(args=ListLiteral(args), kwargs=VarDict(kwargs))
 
-    def evaluate(*contexts):
+    def evaluate(self, *contexts):
         return self.args.evaluate(*contexts), self.kwargs.evaluate(*contexts)
 
 @dataclass
@@ -234,7 +234,7 @@ class Number(Literal):
 class Boolean(Literal):
     truth: bool
 
-    def evaluate(*contexts):
+    def evaluate(self, *contexts):
         return self.truth
 
 @dataclass
@@ -334,7 +334,7 @@ class Operator(Expression):
 class UnaryOp(Operator):
     arg: Expression
 
-    def evaluate(*contexts):
+    def evaluate(self, *contexts):
         op = self.op
         arg = self.arg.evaluate(*contexts)
         return eval(f'{op} {arg!r}')
@@ -344,7 +344,7 @@ class BinaryOp(Operator):
     left: Expression
     right: Expression
 
-    def evaluate(*contexts):
+    def evaluate(self, *contexts):
         op = self.op
         left = self.left.evaluate(*contexts)
         right = self.right.evaluate(*contexts)
