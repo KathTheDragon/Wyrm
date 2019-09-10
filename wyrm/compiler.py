@@ -13,7 +13,7 @@ SYNTAX_REGEXES = {
 }
 NODE_DICT = {
     '': TextNode,
-    '/': CommentNode,
+    '//': CommentNode,
     '/!': HTMLCommentNode,
     '%': HTMLTagNode,
     '=': ExpressionNode,
@@ -81,7 +81,7 @@ def tokenise(string):
 def tokeniseLine(string, indicator, linenum=0, colstart=0):
     from .htmltag import tokenise as tokeniseHtml
     from .expression import tokenise as tokeniseExpression
-    if indicator in ('', '/', '/!'):
+    if indicator in ('', '//', '/!'):
         match = SYNTAX_REGEXES['TEXT'].match(string)
         yield Token('TEXT', match.group(), linenum, match.start()+colstart)
         yield Token('NEWLINE', '', linenum, match.end()+colstart)
