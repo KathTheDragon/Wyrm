@@ -39,6 +39,10 @@ class TemplateError(Exception):
 ## Nodes
 @dataclass
 class Node:
+    @classmethod
+    def str(cls):
+        return cls.__name__
+
     def append(self, value):
         raise NodeError('node cannot take children')
 
