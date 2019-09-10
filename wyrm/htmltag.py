@@ -63,7 +63,7 @@ def tokenise(string, linenum=0, colstart=0):
     yield from tokeniseExpression(string[match.start():], linenum, match.start()+colstart)
 
 def make(line):
-    from .expression import String
+    from .expression import String, ListLiteral
     line = list(line)
     # Get tag name
     if line[0].type == 'TAGNAME':
@@ -77,7 +77,7 @@ def make(line):
         if token.type == 'ID_SHORTCUT':
             id = token.value
         elif token.type == 'CLASS_SHORTCUT':
-            classes.append(token.value)
+            classes.append(String(token.value))
         else:
             # Get attributes
             attributes = makeAttributes(line[i:])
@@ -88,7 +88,7 @@ def make(line):
         # id shortcut always overrides dynamic ids
         attributes.vars += (('id', String(id)),)
     if classes:
-        attributes.vars += (('_class', String(' '.join(classes))),)
+        attributes.vars += (('_class', ListLiteral(classes)),)
     return name, attributes
 
 def makeAttributes(line):
@@ -98,7 +98,10 @@ def makeAttributes(line):
 def render(name, attributes, *contexts):
     attributes = attributes.evaluate(*contexts)
     if '_class' in attributes:
-        attributes['class'] = ' '.join([attributes['class'], attributes['_class']])
+        if 'class' in attributes:
+            attributes['class'] = ' '.join([attributes['class']] + attributes['_class'])
+        else:
+            attributes['class'] = ' '.join(attributes['_class'])
         del attributes['_class']
     attrList = [(f'{attr}={value!r}' if value != True else attr) for attr, value in attributes.items() if value]
     if attrList:
