@@ -153,7 +153,7 @@ class WyrmCommentNode(CommentNode):
 class HTMLCommentNode(CommentNode):
     def render(self, *contexts):
         if self.comment:
-            return [f'<!-- {self.comment} -->']
+            return [f'<!-- {self.comment.evaluate(*contexts)} -->']
         else:
             return ['<!--'] + super().render(*contexts) + ['-->']
 
