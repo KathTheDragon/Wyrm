@@ -439,29 +439,26 @@ class ResourceNode(NodeChildren):
             return cls(src=None)
 
 @dataclass
-class TagResourceNode(ResourceNode):
-    tagname: ClassVar[str]
+class TagResourceNode(ResourceNode, HTMLTagNode):
+    name: ClassVar[str]
+    attributes: ClassVar[AttrDict] = AttrDict([])
     sourcetag: ClassVar[str]
 
     def render(self, *contexts):
         from .htmltag import render as renderTag
         if self.src is None:
-            lines = []
-            for child in self:
-                lines.extend([(' '*4 + line) for line in child.render(*contexts)])
-            open, close = renderTag(self.tagname, AttrDict([]))
-            return [open] + lines + [close]
+            return super().render(*contexts)
         else:
             return [self.sourcetag.format(self.src.evaluate(*contexts))]
 
 @dataclass
 class CSSNode(TagResourceNode):
-    tagname = 'style'
+    name = 'style'
     sourcetag = '<link rel="stylesheet" type="text/css" href="{}.css">'
 
 @dataclass
 class JSNode(TagResourceNode):
-    tagname = 'script'
+    name = 'script'
     sourcetag = '<script src="{}.js">'
 
 @dataclass
