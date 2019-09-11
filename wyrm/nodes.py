@@ -220,14 +220,16 @@ class ExpressionNode(Node):
 class IfNode(NodeChildren):
     def render(self, *contexts):
         for child in self:
-            lines = child.render(*contexts)
-            if isinstance(lines, list):
-                return lines
+            if child:
+                return child.render(*contexts)
         return []
 
 @dataclass
 class ConditionNode(NodeChildren):
     condition: Expression
+
+    def __bool__(self):
+        return self.condition.evaluate(*contexts)
 
     @staticmethod
     def make(line):
@@ -236,12 +238,6 @@ class ConditionNode(NodeChildren):
             return ConditionNode(condition=Boolean(True))
         else:
             return ConditionNode(condition=Expression.make(line))
-
-    def render(self, *contexts):
-        if self.condition.evaluate(*contexts):
-            return super().render(*contexts)
-        else:
-            return ()
 
 @dataclass
 class ForNode(NodeChildren):
