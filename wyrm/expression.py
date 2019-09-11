@@ -31,9 +31,10 @@ UNARY_OPERATORS = [
     'not'
 ]
 STRING = r'([^\\\n]|\\.)*?'
-STRING_ESCAPES = {
-    r'\t': '\t',
-    r'\n': '\n',
+ESCAPES = {
+    't': '\t',
+    'n': '\n',
+    '{': '{"{"}',
 }
 TOKENS = {
     'OPERATOR': r'[-+@&|^~:]|[<>!=]?=|[*/<>]{1,2}|('+'|'.join(KEYWORD_OPERATORS)+r')(?!\w)',
@@ -210,22 +211,16 @@ class Identifier(Literal):
             if name in context:
                 return context[name]
 
-re_slashes = re.compile(r'((?:\\\\)+)')  # Used to split the string on even-length runs of slashes
-re_format = re.compile(r'(?<!\\){(.+?)}')  # Used to target valid brackets for substitution
 re_escape = re.compile(r'\\(.)')  # Used to delete the slash in escape sequences
+re_format = re.compile(r'{(.+?)}')  # Used to target formatting brackets
 
 @dataclass
 class String(Literal):
     string: str
 
     def evaluate(self, *contexts):
-        strings = re_slashes.split(self.string)
-        for i, string in enumerate(strings):
-            strings[i] = re_format.sub(lambda m: str(compile(m[1]).evaluate(*contexts)), string)
-        string = ''.join(strings)
-        for escape, char in STRING_ESCAPES.items():
-            string = string.replace(escape, char)
-        return re_escape.sub(r'\1', string)
+        string = re_escape.sub(lambda m: ESCAPES.get(m[1], m[1]), self.string)
+        return re_format.sub(lambda m: str(compile(m[1]).evaluate(*contexts)), string)
 
 @dataclass
 class Number(Literal):
