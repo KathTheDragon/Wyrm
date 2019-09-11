@@ -216,6 +216,7 @@ class Identifier(Literal):
         for context in contexts:
             if name in context:
                 return context[name]
+        return ''
 
 re_escape = re.compile(r'\\(.)')  # Used to delete the slash in escape sequences
 re_format = re.compile(r'{(.+?)}')  # Used to target formatting brackets
