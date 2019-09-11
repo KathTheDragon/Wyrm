@@ -188,6 +188,13 @@ class HTMLTagNode(NodeChildrenIndent):
             return [open]
         elif len(contents) == 0:
             return [open + close]
+        elif contents[-1] == ' '*4:  # Blank line
+            if len(contents) == 1:
+                return [open + close, '']
+            elif len(contents) == 2:
+                return [open + contents[0][4:] + close, '']
+            else:
+                return [open] + contents[:-1] + [close, '']
         elif len(contents) == 1:
             return [open + contents[0][4:] + close]
         else:
