@@ -99,6 +99,13 @@ class NodeChildren(Node):
     def render(self, *contexts):
         lines = []
         for child in self:
+            lines.extend(child.render(*contexts))
+        return lines
+
+class NodeChildrenIndent(NodeChildren):
+    def render(self, *contexts):
+        lines = []
+        for child in self:
             lines.extend([(' '*4 + line) for line in child.render(*contexts)])
         return lines
 
@@ -121,7 +128,7 @@ class TextNode(Node):
         return [self.text.evaluate(*contexts)]
 
 @dataclass
-class CommentNode(NodeChildren):
+class CommentNode(NodeChildrenIndent):
     comment: String = String('')
 
     def append(self, value):
@@ -158,7 +165,7 @@ class HTMLCommentNode(CommentNode):
             return ['<!--'] + super().render(*contexts) + ['-->']
 
 @dataclass
-class HTMLTagNode(NodeChildren):
+class HTMLTagNode(NodeChildrenIndent):
     name: str
     attributes: AttrDict
 
@@ -364,7 +371,7 @@ class RequireNode(Node):
         return []
 
 @dataclass
-class HTMLNode(NodeChildren):  # Maybe subclass HTMLNode?
+class HTMLNode(NodeChildrenIndent):  # Maybe subclass HTMLNode?
     doctype: str
     attributes: AttrDict
 
