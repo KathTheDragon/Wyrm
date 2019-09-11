@@ -54,7 +54,7 @@ class Node:
         return cls()
 
     def render(self, *contexts):
-        return []
+        yield from ()
 
 @dataclass
 class NodeChildren(Node):
@@ -97,17 +97,13 @@ class NodeChildren(Node):
             raise NodeError('nodes may only have nodes as children')
 
     def render(self, *contexts):
-        lines = []
         for child in self:
-            lines.extend(child.render(*contexts))
-        return lines
+            yield from child.render(*contexts)
 
 class NodeChildrenIndent(NodeChildren):
     def render(self, *contexts):
-        lines = []
         for child in self:
-            lines.extend([(' '*4 + line) for line in child.render(*contexts)])
-        return lines
+            yield from ((' '*4 + line) for line in child.render(*contexts))
 
 @dataclass
 class RootNode(NodeChildren):
@@ -128,7 +124,7 @@ class TextNode(Node):
             raise TemplateError('text nodes can only take a single token')
 
     def render(self, *contexts):
-        return [self.text.evaluate(*contexts)]
+        yield self.text.evaluate(*contexts)
 
 @dataclass
 class CommentNode(NodeChildrenIndent):
@@ -157,15 +153,17 @@ class CommentNode(NodeChildrenIndent):
 @dataclass
 class WyrmCommentNode(CommentNode):
     def render(self, *contexts):
-        return []
+        yield from ()
 
 @dataclass
 class HTMLCommentNode(CommentNode):
     def render(self, *contexts):
         if self.comment:
-            return [f'<!-- {self.comment.evaluate(*contexts)} -->']
+            yield f'<!-- {self.comment.evaluate(*contexts)} -->'
         else:
-            return ['<!--'] + super().render(*contexts) + ['-->']
+            yield '<!--'
+            yield from super().render(*contexts)
+            yield '-->'
 
 @dataclass
 class HTMLTagNode(NodeChildrenIndent):
@@ -181,24 +179,24 @@ class HTMLTagNode(NodeChildrenIndent):
     def render(self, *contexts):
         from .htmltag import render as renderTag
         open, close = renderTag(self.name, self.attributes, *contexts)
-        contents = super().render(*contexts)
+        contents = list(super().render(*contexts))
+        blankline = (contents and contents[-1] == ' '*4)  # Blank line
+        if blankline:
+            contents.pop()
         if close is None:  # Self-closing tag
             if contents:  # Tag isn't empty
                 raise NodeError('self-closing HTML tags may not have children')
-            return [open]
+            yield open
         elif len(contents) == 0:
-            return [open + close]
-        elif contents[-1] == ' '*4:  # Blank line
-            if len(contents) == 1:
-                return [open + close, '']
-            elif len(contents) == 2:
-                return [open + contents[0][4:] + close, '']
-            else:
-                return [open] + contents[:-1] + [close, '']
+            yield open + close
         elif len(contents) == 1:
-            return [open + contents[0][4:] + close]
+            yield open + contents[0][4:] + close
         else:
-            return [open] + contents + [close]
+            yield open
+            yield from contents
+            yield close
+        if blankline:
+            yield ''
 
 @dataclass
 class ExpressionNode(Node):
@@ -211,9 +209,7 @@ class ExpressionNode(Node):
     def render(self, *contexts):
         expr = str(self.expr.evaluate(*contexts))
         if expr:
-            return [expr]
-        else:
-            return []
+            yield expr
 
 # Control nodes
 @dataclass
@@ -221,8 +217,8 @@ class IfNode(NodeChildren):
     def render(self, *contexts):
         for child in self:
             if child:
-                return child.render(*contexts)
-        return []
+                yield from child.render(*contexts)
+                break
 
 @dataclass
 class ConditionNode(NodeChildren):
@@ -256,7 +252,6 @@ class ForNode(NodeChildren):
         return ForNode(vars=vars, container=container)
 
     def render(self, *contexts):
-        lines = []
         container = self.container.evaluate(*contexts)
         loop = empty = else_ = None
         for i, child in enumerate(self):
@@ -280,12 +275,11 @@ class ForNode(NodeChildren):
                 else:
                     context = dict(zip(vars, item))
                 context['loop'] = LoopVars(i, length, parent)
-                lines.extend(loop.render(context, *contexts))
+                yield from loop.render(context, *contexts)
             if else_ is not None:
-                lines.extend(else_.render(*contexts))
+                yield from else_.render(*contexts)
         elif empty is not None:
-            return empty.render(*contexts)
-        return lines
+            yield from empty.render(*contexts)
 
 @dataclass
 class LoopNode(NodeChildren):
@@ -313,9 +307,9 @@ class WithNode(NodeChildren):
     def render(self, *contexts):
         context = self.vars.evaluate(*contexts)
         if self.limitcontext:
-            return super().render(context)
+            yield from super().render(context)
         else:
-            return super().render(context, *contexts)
+            yield from super().render(context, *contexts)
 
 # Command nodes
 @dataclass
@@ -347,9 +341,9 @@ class IncludeNode(NodeChildren):
             _blocks[block.name] = block.render(*contexts)
         context['_blocks'] = _blocks
         if self.limitcontext:
-            return template.render(context)
+            yield from template.render(context)
         else:
-            return template.render(context, *contexts)
+            yield from template.render(context, *contexts)
 
 @dataclass
 class BlockNode(NodeChildren):
@@ -366,9 +360,10 @@ class BlockNode(NodeChildren):
         for context in contexts:
             if '_blocks' in context:
                 _blocks = context['_blocks']
-                if self.name in blocks:
-                    return _blocks[self.name]
-        return super().render(*contexts)
+                if self.name in _blocks:
+                    yield from _blocks[self.name]
+                    return
+        yield from super().render(*contexts)
 
 @dataclass
 class RequireNode(Node):
@@ -386,7 +381,7 @@ class RequireNode(Node):
                     break
             else:
                 raise TemplateError(f'variable not in context: {var!r}')
-        return []
+        yield from ()
 
 @dataclass
 class HTMLNode(HTMLTagNode):
@@ -409,7 +404,8 @@ class HTMLNode(HTMLTagNode):
 
     def render(self, *contexts):
         from .htmltag import DOCTYPES
-        return [DOCTYPES[self.doctype]] + super().render(*contexts)
+        yield DOCTYPES[self.doctype]
+        yield from super().render(*contexts)
 
 @dataclass
 class ResourceNode(NodeChildren):
@@ -443,9 +439,9 @@ class TagResourceNode(ResourceNode, HTMLTagNode):
     def render(self, *contexts):
         from .htmltag import render as renderTag
         if self.src is None:
-            return super().render(*contexts)
+            yield from super().render(*contexts)
         else:
-            return [self.sourcetag.format(self.src.evaluate(*contexts))]
+            yield self.sourcetag.format(self.src.evaluate(*contexts))
 
 @dataclass
 class CSSNode(TagResourceNode):
@@ -465,7 +461,7 @@ class MarkdownNode(ResourceNode):
             string = '\n'.join(super().render(*contexts))
         else:
             string = load_file(self.src.evaluate(*contexts), '.md')
-        return markdown(string).splitlines()
+        yield from markdown(string).splitlines()
 
 ## Helper Classes
 @dataclass
