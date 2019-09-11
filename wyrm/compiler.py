@@ -118,7 +118,7 @@ def compile(string):
     indents = [-1]
     nodes = [RootNode()]
     line = []
-    for token in tokenise(string):
+    for token in tokenise(string.replace('\t', ' '*4)):
         if token.type != 'NEWLINE':
             line.append(token)
         else:  # End of line, compile
@@ -137,12 +137,12 @@ def compile(string):
                     if indent == indents[-1]:
                         break
                     else:
-                        raise CompilerError(f'unexpected {_nodes[0]}')
+                        raise CompilerError(f'unexpected {_nodes[0]!s}')
                 indents.pop()
                 node = nodes.pop()
                 nodes[-1].append(node)
             if not isinstance(nodes[-1], NodeChildren):
-                raise CompilerError(f'node {nodes[-1]} does not support children')
+                raise CompilerError(f'node {nodes[-1]!s} does not support children')
             nodes.extend(_nodes)
             indents.extend(_indents)
             line = []
