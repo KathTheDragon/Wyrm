@@ -178,10 +178,17 @@ class HTMLTagNode(NodeChildrenIndent):
     def render(self, *contexts):
         from .htmltag import render as renderTag
         open, close = renderTag(self.name, self.attributes, *contexts)
+        contents = super().render(*contexts)
         if close is None:  # Self-closing tag
+            if contents:  # Tag isn't empty
+                raise NodeError('self-closing HTML tags may not have children')
             return [open]
+        elif len(contents) == 0:
+            return [open + close]
+        elif len(contents) == 1:
+            return [open + contents[0][4:] + close]
         else:
-            return [open] + super().render(*contexts) + [close]
+            return [open] + contents + [close]
 
 @dataclass
 class ExpressionNode(Node):
