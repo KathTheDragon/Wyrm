@@ -79,6 +79,15 @@ class VarList:
     def __init__(self, vars):
         self.vars = tuple(vars)
 
+    def __len__(self):
+        return len(self.vars)
+
+    def __getitem__(self, item):
+        return self.vars[item]
+
+    def __iter__(self):
+        yield from self.vars
+
     @staticmethod
     def make(tokens):
         vars = []
@@ -94,9 +103,6 @@ class VarList:
                     raise SyntaxError(tokens[i])
             i = j+1
         return VarList(vars=vars)
-
-    def __iter__(self):
-        yield from self.vars
 
 @dataclass
 class VarDict:

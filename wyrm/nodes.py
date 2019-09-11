@@ -266,11 +266,12 @@ class ForNode(NodeChildren):
                 parent = contexts[-1]['loop']
             else:
                 parent = None
-            vars = self.vars.vars  # Temp until VarList supports sequence operations
+            vars = self.vars
             for i, item in enumerate(container):
                 if len(vars) == 1:
-                    item = (item,)
-                context = dict(zip(vars, item))
+                    context = {vars[0], item}
+                else:
+                    context = dict(zip(vars, item))
                 context['loop'] = LoopVars(i, length, parent)
                 lines.extend(loop.render(context, *contexts))
             if else_ is not None:
