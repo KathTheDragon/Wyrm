@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, replace, InitVar
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List, Dict, Optional, ClassVar
 from .expression import Expression, String, VarList, VarDict, AttrDict
 
 ## Constants
@@ -419,20 +419,30 @@ class ResourceNode(NodeChildren):
             return cls(src=None)
 
 @dataclass
-class CSSNode(ResourceNode):
+class TagResourceNode(ResourceNode):
+    tagname: ClassVar[str]
+    sourcetag: ClassVar[str]
+
     def render(self, *contexts):
+        from .htmltag import render as renderTag
         if self.src is None:
-            return ['<style>'] + super().render(*contexts) + ['</style>']
+            lines = []
+            for child in self:
+                lines.extend([(' '*4 + line) for line in child.render(*contexts)])
+            open, close = renderTag(self.tagname, AttrDict([]))
+            return [open] + lines + [close]
         else:
-            return [f'<link rel="stylesheet" type="text/css" href="{self.src.evaluate(*contexts)}.css">']
+            return [self.sourcetag.format(self.src.evaluate(*contexts))]
 
 @dataclass
-class JSNode(ResourceNode):
-    def render(self, *contexts):
-        if self.src is None:
-            return ['<script>'] + super().render(*contexts) + ['</script>']
-        else:
-            return [f'<script src="{self.src.evaluate(*contexts)}.js">']
+class CSSNode(TagResourceNode):
+    tagname = 'style'
+    sourcetag = '<link rel="stylesheet" type="text/css" href="{}.css">'
+
+@dataclass
+class JSNode(TagResourceNode):
+    tagname = 'script'
+    sourcetag = '<script src="{}.js">'
 
 @dataclass
 class MarkdownNode(ResourceNode):
