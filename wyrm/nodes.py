@@ -393,9 +393,9 @@ class RequireNode(Node):
         return []
 
 @dataclass
-class HTMLNode(NodeChildrenIndent):  # Maybe subclass HTMLNode?
+class HTMLNode(HTMLTagNode):
+    name: str = field(default='html', init=False, repr=False)
     doctype: str
-    attributes: AttrDict
 
     @staticmethod
     def make(line):
@@ -412,10 +412,8 @@ class HTMLNode(NodeChildrenIndent):  # Maybe subclass HTMLNode?
         return HTMLNode(doctype=doctype, attributes=attributes)
 
     def render(self, *contexts):
-        from .htmltag import DOCTYPES, render as renderTag
-        doctype = DOCTYPES[self.doctype]
-        open, close = renderTag('html', self.attributes, *contexts)
-        return [doctype, open] + super().render(*contexts) + [close]
+        from .htmltag import DOCTYPES
+        return [DOCTYPES[self.doctype]] + super().render(*contexts)
 
 @dataclass
 class ResourceNode(NodeChildren):
