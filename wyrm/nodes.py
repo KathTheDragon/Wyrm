@@ -399,6 +399,18 @@ class HTMLNode(NodeChildrenIndent):  # Maybe subclass HTMLNode?
 class ResourceNode(NodeChildren):
     src: Optional[Expression]
 
+    def append(self, value):
+        if self.src is not None:
+            raise NodeError('resource nodes may not have children if they have a source expression')
+        else:
+            super().append(value)
+
+    def extend(self, value):
+        if self.src is not None:
+            raise NodeError('resource nodes may not have children if they have a source expression')
+        else:
+            super().extend(value)
+
     @classmethod
     def make(cls, line):
         if line:
