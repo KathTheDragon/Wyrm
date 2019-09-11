@@ -255,7 +255,7 @@ class ForNode(NodeChildren):
         for i, child in enumerate(self):
             if i==0 and isinstance(child, LoopNode):
                 loop = child
-            elif i==1 and isinstance(child, EmptyNode):
+            elif isinstance(child, EmptyNode):
                 empty = child
             elif isinstance(child, ConditionNode):
                 else_ = child
