@@ -105,7 +105,9 @@ class VarDict:
         self.vars = tuple(vars)
 
     @staticmethod
-    def make(tokens):
+    def make(tokens=None):
+        if tokens is None:
+            return VarDict(vars=[])
         vars = []
         i = 0
         for j in getCommas(tokens):
@@ -129,7 +131,9 @@ class VarDict:
 @dataclass
 class AttrDict(VarDict):
     @staticmethod
-    def make(tokens):
+    def make(tokens=None):
+        if tokens is None:
+            return AttrDict(vars=[])
         attributes = []
         i = 0
         for j in getCommas(tokens):
