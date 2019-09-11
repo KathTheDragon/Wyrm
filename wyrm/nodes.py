@@ -280,21 +280,21 @@ class EmptyNode(NodeChildren):
 @dataclass
 class WithNode(NodeChildren):
     vars: VarDict
-    limit_context: bool
+    limitcontext: bool
 
     @staticmethod
     def make(line):
         if line and line[0].type == 'KEYWORD' and line[0].value == 'only':
             line = line[1:]
-            limit_context = True
+            limitcontext = True
         else:
-            limit_context = False
+            limitcontext = False
         vars = VarDict.make(line)
-        return WithNode(vars=vars, limit_context=limit_context)
+        return WithNode(vars=vars, limitcontext=limitcontext)
 
     def render(self, *contexts):
         context = self.vars.evaluate(*contexts)
-        if self.limit_context:
+        if self.limitcontext:
             return super().render(context)
         else:
             return super().render(context, *contexts)
@@ -304,7 +304,7 @@ class WithNode(NodeChildren):
 class IncludeNode(NodeChildren):
     file: Expression
     vars: VarDict
-    limit_context: bool
+    limitcontext: bool
 
     @staticmethod
     def make(line):
@@ -318,7 +318,7 @@ class IncludeNode(NodeChildren):
             return IncludeNode(file=file)
         else:
             with_ = WithNode.make(line[ix+1:])
-            return IncludeNode(file=file, vars=with_.vars, limit_context=with_.limit_context)
+            return IncludeNode(file=file, vars=with_.vars, limitcontext=with_.limitcontext)
 
     def render(self, *contexts):
         from .template import load_template
@@ -328,7 +328,7 @@ class IncludeNode(NodeChildren):
         for block in self:
             _blocks[block.name] = block.render(*contexts)
         context['_blocks'] = _blocks
-        if self.limit_context:
+        if self.limitcontext:
             return template.render(context)
         else:
             return template.render(context, *contexts)
