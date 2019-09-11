@@ -394,7 +394,7 @@ class RequireNode(Node):
 
 @dataclass
 class HTMLNode(HTMLTagNode):
-    name: str = field(default='html', init=False, repr=False)
+    name: ClassVar[str] = 'html'
     doctype: str
 
     @staticmethod
