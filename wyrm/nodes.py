@@ -202,7 +202,11 @@ class ExpressionNode(Node):
         return ExpressionNode(expr=Expression.make(line))
 
     def render(self, *contexts):
-        return [self.expr.evaluate(*contexts)]
+        expr = str(self.expr.evaluate(*contexts))
+        if expr:
+            return [expr]
+        else:
+            return []
 
 # Control nodes
 @dataclass
