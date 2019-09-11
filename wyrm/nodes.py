@@ -116,13 +116,16 @@ class RootNode(NodeChildren):
 # Text nodes
 @dataclass
 class TextNode(Node):
-    text: String
+    text: String = String('')
 
     @staticmethod
     def make(line):
-        if len(line) != 1:
+        if len(line) == 0:
+            return TextNode()
+        elif len(line) == 1:
+            return TextNode(text=String(line[0].value))
+        else:
             raise TemplateError('text nodes can only take a single token')
-        return TextNode(text=String(line[0].value))
 
     def render(self, *contexts):
         return [self.text.evaluate(*contexts)]

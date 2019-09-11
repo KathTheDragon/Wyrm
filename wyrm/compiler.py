@@ -127,7 +127,7 @@ def compile(string):
                 if indent == -1:  # Leading blank line, can be ignored
                     line = []
                     continue
-                _nodes = [TextNode('')]
+                _nodes = [TextNode()]
             else:
                 indent = len(line[0].value)
                 _nodes = compileLine(line[1:])
