@@ -359,11 +359,15 @@ class BinaryOp(Operator):
         return eval(f'{left!r} {op} {right!r}')
 
 ## Functions
-def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expression structure here
+def tokenise(string, linenum=None, colstart=0):  # Perhaps I might enforce expression structure here
     from .compiler import Token, CompilerError
-    if not string:
-        yield Token('END', '', linenum, colstart)
+    if colstart >= len(string):
         return
+    if linenum is None:
+        nested = False
+        linenum = 0
+    else:
+        nested = True
     brackets = []
     for match in TOKEN_REGEX.finditer(string, colstart):
         type = match.lastgroup
@@ -371,7 +375,9 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         column = match.start()
         if type == 'OPERATOR' and value == ':':
             if not brackets:  # Inline operator
-                break
+                if nested:
+                    return column
+                raise CompilerError(f'unexpected character', value, linenum, column)
         elif type == 'LBRACKET':
             brackets.append(value)
         elif type == 'RBRACKET':
@@ -383,16 +389,12 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         elif type == 'WHITESPACE':
             continue
         elif type == 'UNKNOWN':
-            if not brackets:  # Probably a newline
-                break
+            if nested and not brackets:  # Probably a newline
+                return column
             raise CompilerError(f'unexpected character', value, linenum, column)
         yield Token(type, value, linenum, column)
-    else:
-        if brackets:
-            raise CompilerError(f'unclosed bracket', brackets[-1], linenum, '_')
-        yield Token('END', '', linenum, match.end())
-        return
-    yield Token('END', '', linenum, column)
+    if brackets:
+        raise CompilerError(f'unclosed bracket', brackets[-1], linenum, '_')
 
 def compile(string):
     return compileTokens(tokenise(string))
@@ -451,11 +453,6 @@ def compileTokens(tokens):
             partials.append(String(eval(token.value)))
         elif token.type == 'NUMBER':
             partials.append(Number(eval(token.value)))
-        elif token.type == 'END':
-            if j == len(tokens):
-                break
-            else:
-                raise UnexpectedTokenError(tokens[j])
         else:  # Unexpected token
             raise UnexpectedTokenError(token)
         i = j

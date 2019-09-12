@@ -87,31 +87,25 @@ def tokeniseLine(string, indicator, linenum=0, colstart=0):
         yield Token('NEWLINE', '', linenum, match.end())
         return
     elif indicator == '%':
-        for token in tokeniseHTML(string, linenum, colstart):
-            if token.type == 'END':
-                break
-            yield token
-    elif indicator in ('-', '=', ':'):
-        if indicator == '=':
-            column = 0
-        else:
-            match = SYNTAX_REGEXES['KEYWORD'].match(string, colstart)
-            yield Token('KEYWORD', match.group(), linenum, match.start())
-            column = match.end()
-        for token in tokeniseExpression(string, linenum, column):
-            if token.type == 'END':
-                break
-            yield token
+        column = yield from tokeniseHtml(string, linenum, colstart)
+    elif indicator == '=':
+        column = yield from tokeniseExpression(string, linenum, colstart)
+    elif indicator in ('-', ':'):
+        match = SYNTAX_REGEXES['KEYWORD'].match(string, colstart)
+        yield Token('KEYWORD', match.group(), linenum, match.start())
+        column = yield from tokeniseExpression(string, linenum, match.end())
     else:
         raise CompilerError(f'invalid indicator: `{indicator}`')
-    match = SYNTAX_REGEXES['INLINE'].match(string, token.column)
+    if column is None:
+        column = len(string)
+    match = SYNTAX_REGEXES['INLINE'].match(string, column)
     if match is not None:
         yield Token('INLINE', '', linenum, match.start())
         indicator = match.group(1)
         yield Token('INDICATOR', indicator, linenum, match.start(1))
         yield from tokeniseLine(string, indicator, linenum, match.end())
     else:
-        yield Token('NEWLINE', '', linenum, token.column)
+        yield Token('NEWLINE', '', linenum, column)
 
 def compile(string):
     indents = [-1]

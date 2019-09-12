@@ -55,12 +55,10 @@ def tokenise(string, linenum=0, colstart=0):
         elif type == 'CLASS_SHORTCUT':
             value = value.lstrip(' .')
         elif type == 'UNKNOWN':
-            break
+            column = yield from tokeniseExpression(string, linenum, column)
+            return column
         yield Token(type, value, linenum, column)
-    else:
-        yield Token('END', '', linenum, match.end())
-        return
-    yield from tokeniseExpression(string, linenum, column)
+
 
 def make(line):
     from .expression import String, ListLiteral
