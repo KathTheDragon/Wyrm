@@ -365,10 +365,10 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
         yield Token('END', '', linenum, colstart)
         return
     brackets = []
-    for match in TOKEN_REGEX.finditer(string):
+    for match in TOKEN_REGEX.finditer(string, colstart):
         type = match.lastgroup
         value = match.group()
-        column = match.start() + colstart
+        column = match.start()
         if type == 'OPERATOR' and value == ':':
             if not brackets:  # Inline operator
                 break
@@ -390,7 +390,7 @@ def tokenise(string, linenum=0, colstart=0):  # Perhaps I might enforce expressi
     else:
         if brackets:
             raise CompilerError(f'unclosed bracket', brackets[-1], linenum, '_')
-        yield Token('END', '', linenum, match.end()+colstart)
+        yield Token('END', '', linenum, match.end())
         return
     yield Token('END', '', linenum, column)
 

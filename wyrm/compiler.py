@@ -74,7 +74,7 @@ def tokenise(string):
             intext = False
         yield Token('INDENT', indent, linenum, indentcolumn)
         yield Token('INDICATOR', indicator, linenum, indicatorcolumn)
-        yield from tokeniseLine(line[column:], indicator, linenum, column)
+        yield from tokeniseLine(line, indicator, linenum, column)
         lastindent = indent
         lastindicator = indicator
 
@@ -82,12 +82,12 @@ def tokeniseLine(string, indicator, linenum=0, colstart=0):
     from .htmltag import tokenise as tokeniseHtml
     from .expression import tokenise as tokeniseExpression
     if indicator in ('', '//', '/!'):
-        match = SYNTAX_REGEXES['TEXT'].match(string)
-        yield Token('TEXT', match.group(), linenum, match.start()+colstart)
-        yield Token('NEWLINE', '', linenum, match.end()+colstart)
+        match = SYNTAX_REGEXES['TEXT'].match(string, colstart)
+        yield Token('TEXT', match.group(), linenum, match.start())
+        yield Token('NEWLINE', '', linenum, match.end())
         return
     elif indicator == '%':
-        for token in tokeniseHtml(string, linenum, colstart):
+        for token in tokeniseHTML(string, linenum, colstart):
             if token.type == 'END':
                 break
             yield token
@@ -95,22 +95,21 @@ def tokeniseLine(string, indicator, linenum=0, colstart=0):
         if indicator == '=':
             column = 0
         else:
-            match = SYNTAX_REGEXES['KEYWORD'].match(string)
-            yield Token('KEYWORD', match.group(), linenum, match.start()+colstart)
+            match = SYNTAX_REGEXES['KEYWORD'].match(string, colstart)
+            yield Token('KEYWORD', match.group(), linenum, match.start())
             column = match.end()
-        for token in tokeniseExpression(string[column:], linenum, column+colstart):
+        for token in tokeniseExpression(string, linenum, column):
             if token.type == 'END':
                 break
             yield token
     else:
         raise CompilerError(f'invalid indicator: `{indicator}`')
-    match = SYNTAX_REGEXES['INLINE'].match(string, token.column-colstart)
+    match = SYNTAX_REGEXES['INLINE'].match(string, token.column)
     if match is not None:
-        yield Token('INLINE', '', linenum, match.start()+colstart)
+        yield Token('INLINE', '', linenum, match.start())
         indicator = match.group(1)
-        column = match.end()
-        yield Token('INDICATOR', indicator, linenum, match.start(1)+colstart)
-        yield from tokeniseLine(string[column:], indicator, linenum, column+colstart)
+        yield Token('INDICATOR', indicator, linenum, match.start(1))
+        yield from tokeniseLine(string, indicator, linenum, match.end())
     else:
         yield Token('NEWLINE', '', linenum, token.column)
 

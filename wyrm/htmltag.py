@@ -46,10 +46,10 @@ class ExpressionError(Exception):
 def tokenise(string, linenum=0, colstart=0):
     from .compiler import Token
     from .expression import tokenise as tokeniseExpression
-    for match in TOKEN_REGEX.finditer(string):
+    for match in TOKEN_REGEX.finditer(string, colstart):
         type = match.lastgroup
         value = match.group()
-        column = match.start() + colstart
+        column = match.start()
         if type == 'ID_SHORTCUT':
             value = value.lstrip(' #')
         elif type == 'CLASS_SHORTCUT':
@@ -58,9 +58,9 @@ def tokenise(string, linenum=0, colstart=0):
             break
         yield Token(type, value, linenum, column)
     else:
-        yield Token('END', '', linenum, match.end()+colstart)
+        yield Token('END', '', linenum, match.end())
         return
-    yield from tokeniseExpression(string[match.start():], linenum, match.start()+colstart)
+    yield from tokeniseExpression(string, linenum, column)
 
 def make(line):
     from .expression import String, ListLiteral
