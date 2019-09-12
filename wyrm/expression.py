@@ -89,19 +89,16 @@ class VarList:
         yield from self.vars
 
     @staticmethod
-    def make(tokens):
+    def make(tokens=()):
         vars = []
-        i = 0
-        for j in getCommas(tokens):
-            if j == i:
-                raise SyntaxError(tokens[i])
+        for item, sep in partitionList(tokens):
+            if not item:
+                raise SyntaxError(sep)
+            var = compileTokens(item)
+            if isinstance(var, Identifier):
+                vars.append(var.name)
             else:
-                var = compileTokens(tokens[i:j])
-                if isinstance(var, Identifier):
-                    vars.append(var.name)
-                else:
-                    raise SyntaxError(tokens[i])
-            i = j+1
+                raise SyntaxError(item[0])
         return VarList(vars=vars)
 
 @dataclass
@@ -112,24 +109,17 @@ class VarDict:
         self.vars = tuple(vars)
 
     @staticmethod
-    def make(tokens=None):
-        if tokens is None:
-            return VarDict(vars=[])
+    def make(tokens=()):
         vars = []
-        i = 0
-        for j in getCommas(tokens):
-            if j == i:
-                raise SyntaxError(tokens[i])
-            else:
-                var = compileTokens(tokens[i:j])
-                if isinstance(var, BinaryOp) and var.op == '=':
-                    if isinstance(var.left, Identifier):
-                        vars.append((var.left.name, var.right))
-                    else:
-                        raise SyntaxError(tokens[i])
-                else:
-                    raise SyntaxError(tokens[i])
-            i = j+1
+        for item, sep in partitionList(tokens):
+            if not item:
+                raise SyntaxError(sep)
+            var = compileTokens(item)
+            if isinstance(var, BinaryOp) and var.op == '=':
+                if isinstance(var.left, Identifier):
+                    vars.append((var.left.name, var.right))
+                    continue
+            raise SyntaxError(item[0])
         return VarDict(vars=vars)
 
     def evaluate(self, *contexts):
@@ -138,27 +128,22 @@ class VarDict:
 @dataclass
 class AttrDict(VarDict):
     @staticmethod
-    def make(tokens=None):
-        if tokens is None:
-            return AttrDict(vars=[])
+    def make(tokens=()):
         attributes = []
-        i = 0
-        for j in getCommas(tokens):
-            if j == i:
-                raise SyntaxError(tokens[i])
+        for item, sep in partitionList(tokens):
+            if not item:
+                raise SyntaxError(sep)
+            attr = Expression.make(item)
+            if isinstance(attr, BinaryOp) and attr.op == '=':
+                name, value = attr.left, attr.right
             else:
-                attr = Expression.make(tokens[i:j])
-                if isinstance(attr, BinaryOp) and attr.op == '=':
-                    name, value = attr.left, attr.right
-                else:
-                    name, value = attr, Boolean(True)
-                if isinstance(name, Identifier):
-                    attributes.append((name.name, value))
-                elif isinstance(name, String):
-                    attributes.append((name.string, value))
-                else:
-                    raise SyntaxError(tokens[i])
-            i = j+1
+                name, value = attr, Boolean(True)
+            if isinstance(name, Identifier):
+                attributes.append((name.name, value))
+            elif isinstance(name, String):
+                attributes.append((name.string, value))
+            else:
+                raise SyntaxError(item[0])
         return AttrDict(vars=attributes)
 
 @dataclass
@@ -167,24 +152,21 @@ class ArgList:
     kwargs: VarDict
 
     @staticmethod
-    def make(tokens):
+    def make(tokens=()):
         args = []
         kwargs = []
-        i = 1
-        for j in getCommas(tokens):
-            if j == i:
-                if tokens[j].type == 'COMMA':
+        for item, sep in partitionList(tokens):
+            if not item:
+                if sep is not None:
+                    raise SyntaxError(sep)
+            arg = compileTokens(item)
+            if isinstance(arg, BinaryOp) and arg.op == '=':
+                if isinstance(arg.left, Identifier):
+                    kwargs.append((arg.left.name, arg.right))
+                else:
                     raise SyntaxError(tokens[i])
             else:
-                arg = compileTokens(tokens[i:j])
-                if isinstance(arg, BinaryOp) and arg.op == '=':
-                    if isinstance(arg.left, Identifier):
-                        kwargs.append((arg.left.name, arg.right))
-                    else:
-                        raise SyntaxError(tokens[i])
-                else:
-                    args.append(arg)
-            i = j+1
+                args.append(arg)
         return ArgList(args=ListLiteral(args), kwargs=VarDict(kwargs))
 
     def evaluate(self, *contexts):
@@ -258,17 +240,15 @@ class Sequence(Expression):
     @classmethod
     def make(cls, tokens):
         items = []
-        i = 1
-        for j in getCommas(tokens):
-            if j == i:
-                if tokens[j].type == 'COMMA':
-                    raise SyntaxError(tokens[j])
+        for item, sep in partitionList(tokens):
+            if not item:
+                if sep is not None:
+                    raise SyntaxError(sep)
                 if cls == TupleLiteral:
                     items.append(None)
             else:
-                items.append(compileTokens(tokens[i:j]))
-            i = j + 1
-        return cls(tuple(items))
+                items.append(compileTokens(item))
+        return cls(items)
 
 @dataclass(init=False)
 class TupleLiteral(Sequence):
@@ -499,25 +479,42 @@ def matchBrackets(tokens):
                 return i
     raise TokenError('unmatched bracket', tokens[0])
 
-def getCommas(tokens):
-    if not tokens:
+def partition(sequence, *, sep=None, sep_func=None, nest_func=None, yield_sep=False):
+    if not sequence:
         return
+    if sep is None == sep_func is None:
+        raise ValueError('exactly one of separator and separator_func must be given')
+    if sep is not None:
+        sep_func = lambda item: item == sep
+    if nest_func is None:
+        nest_func = lambda item: 0
     depth = 0
-    if tokens[0].type == 'LBRACKET':
-        _depth = 1
+    edges = (nest_func(sequence[0]), nest_func(sequence[-1]))
+    if edges == (1, -1):
+        i = 1
+        k = -1
+    elif edges[0] == 1 or edges[1] == -1:
+        raise ValueError('sequence is improperly nested')
     else:
-        _depth = 0
-    for i, token in enumerate(tokens):
-        if token.type == 'COMMA' and depth == _depth:
-            yield i
-        elif token.type == 'LBRACKET':
-            depth += 1
-        elif token.type == 'RBRACKET':
-            depth -= 1
-    if _depth and tokens[-1].type == 'RBRACKET':
-        yield i
+        i = 0
+        k = None
+    for j, item in enumerate(sequence):
+        if sep_func(item) and depth == _depth:
+            if yield_sep:
+                yield (sequence[i:j], item)
+            else:
+                yield sequence[i:j]
+            i = j+1
+        depth += nest_func(item)
+    if yield_sep:
+        yield sequence[i:k], None
     else:
-        yield i + 1
+        yield sequence[i:k]
+
+def partitionList(sequence):
+    sep_func = lambda token: token.type == 'COMMA'
+    nest_func = lambda token: 1 if token.type == 'LBRACKET' else -1 if token.type == 'RBRACKET' else 0
+    yield from partition(sequence, sep_func=sep_func, nest_func=nest_func, yield_sep=True)
 
 def compileBinaryOps(partials, operators):
     partials = partials.copy()
