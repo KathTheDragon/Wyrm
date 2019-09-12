@@ -3,7 +3,7 @@ from .expression import Expression
 
 ## Constants
 TOKENS = {
-    'TAGNAME': r'^[a-zA-Z_][-\w]*',
+    'TAGNAME': r'[a-zA-Z_][-\w]*',
     'ID_SHORTCUT': r' *#[a-zA-Z][-\w]*',
     'CLASS_SHORTCUT': r' *\.[a-zA-Z][-\w]*',
     'UNKNOWN': r'.'
@@ -50,7 +50,11 @@ def tokenise(string, linenum=0, colstart=0):
         type = match.lastgroup
         value = match.group()
         column = match.start()
-        if type == 'ID_SHORTCUT':
+        if type == 'TAGNAME':
+            if column != colstart:
+                column = yield from tokeniseExpression(string, linenum, column)
+                return column
+        elif type == 'ID_SHORTCUT':
             value = value.lstrip(' #')
         elif type == 'CLASS_SHORTCUT':
             value = value.lstrip(' .')
@@ -58,7 +62,6 @@ def tokenise(string, linenum=0, colstart=0):
             column = yield from tokeniseExpression(string, linenum, column)
             return column
         yield Token(type, value, linenum, column)
-
 
 def make(line):
     from .expression import String, ListLiteral
