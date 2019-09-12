@@ -73,11 +73,29 @@ class ExpressionError(Exception):
 
 ## Classes
 @dataclass
-class VarList:
-    vars: Tuple[str, ...]
+class FormalList:
+    vars: tuple
 
-    def __init__(self, vars):
-        self.vars = tuple(vars)
+    @classmethod
+    def make(cls, tokens=()):
+        vars = []
+        for item, sep in partitionList(tokens):
+            if not item:
+                raise SyntaxError(sep)
+            var = self.makeVar(compileTokens(item))
+            if var is None:
+                raise SyntaxError(item[0])
+            else:
+                vars.append(var)
+        return cls(vars=tuple(vars))
+
+    @staticmethod
+    def makeVar(item):
+        return item
+
+@dataclass
+class VarList(FormalList):
+    vars: Tuple[str, ...]
 
     def __len__(self):
         return len(self.vars)
@@ -89,38 +107,21 @@ class VarList:
         yield from self.vars
 
     @staticmethod
-    def make(tokens=()):
-        vars = []
-        for item, sep in partitionList(tokens):
-            if not item:
-                raise SyntaxError(sep)
-            var = compileTokens(item)
-            if isinstance(var, Identifier):
-                vars.append(var.name)
-            else:
-                raise SyntaxError(item[0])
-        return VarList(vars=vars)
+    def makeVar(item):
+        if isinstance(item, Identifier):
+            return item.name
+        return None
 
 @dataclass
-class VarDict:
+class VarDict(FormalList):
     vars: Tuple[Tuple[str, 'Expression'], ...]
 
-    def __init__(self, vars):
-        self.vars = tuple(vars)
-
     @staticmethod
-    def make(tokens=()):
-        vars = []
-        for item, sep in partitionList(tokens):
-            if not item:
-                raise SyntaxError(sep)
-            var = compileTokens(item)
-            if isinstance(var, BinaryOp) and var.op == '=':
-                if isinstance(var.left, Identifier):
-                    vars.append((var.left.name, var.right))
-                    continue
-            raise SyntaxError(item[0])
-        return VarDict(vars=vars)
+    def makeVar(item):
+        if isinstance(item, BinaryOp) and item.op == '=':
+            if isinstance(item.left, Identifier):
+                return (item.left.name, item.right)
+        return None
 
     def evaluate(self, *contexts):
         return {var: expr.evaluate(*contexts) for var, expr in self.vars}
@@ -128,23 +129,16 @@ class VarDict:
 @dataclass
 class AttrDict(VarDict):
     @staticmethod
-    def make(tokens=()):
-        attributes = []
-        for item, sep in partitionList(tokens):
-            if not item:
-                raise SyntaxError(sep)
-            attr = Expression.make(item)
-            if isinstance(attr, BinaryOp) and attr.op == '=':
-                name, value = attr.left, attr.right
-            else:
-                name, value = attr, Boolean(True)
-            if isinstance(name, Identifier):
-                attributes.append((name.name, value))
-            elif isinstance(name, String):
-                attributes.append((name.string, value))
-            else:
-                raise SyntaxError(item[0])
-        return AttrDict(vars=attributes)
+    def makeVar(item):
+        if isinstance(item, BinaryOp) and item.op == '=':
+            name, value = item.left, item.right
+        else:
+            name, value = item, Boolean(True)
+        if isinstance(name, Identifier):
+            return (name.name, value)
+        elif isinstance(name, String):
+            return (name.string, value)
+        return None
 
 @dataclass
 class ArgList:
@@ -167,7 +161,7 @@ class ArgList:
                     raise SyntaxError(tokens[i])
             else:
                 args.append(arg)
-        return ArgList(args=ListLiteral(args), kwargs=VarDict(kwargs))
+        return ArgList(args=ListLiteral(tuple(args)), kwargs=VarDict(tuple(kwargs)))
 
     def evaluate(self, *contexts):
         return self.args.evaluate(*contexts), self.kwargs.evaluate(*contexts)
@@ -234,9 +228,6 @@ class NoneSingleton(Literal):
 class Sequence(Expression):
     items: tuple
 
-    def __init__(self, items):
-        self.items = tuple(items)
-
     @classmethod
     def make(cls, tokens):
         items = []
@@ -248,7 +239,7 @@ class Sequence(Expression):
                     items.append(None)
             else:
                 items.append(compileTokens(item))
-        return cls(items)
+        return cls(tuple(items))
 
 @dataclass(init=False)
 class TupleLiteral(Sequence):
