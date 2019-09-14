@@ -108,7 +108,10 @@ class NodeChildrenIndent(NodeChildren):
 
 @dataclass
 class RootNode(NodeChildren):
-    pass
+    def render(self, *contexts):
+        if not contexts:
+            contexts = ({},)  # Not sure if I want to set the global context here directly or not
+        super().render(self, *contexts)
 
 # Text nodes
 @dataclass
