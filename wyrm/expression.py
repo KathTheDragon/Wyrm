@@ -82,7 +82,7 @@ class FormalList:
         for item, sep in partitionList(tokens):
             if not item:
                 raise SyntaxError(sep)
-            var = self.makeVar(compileTokens(item))
+            var = cls.makeVar(compileTokens(item))
             if var is None:
                 raise SyntaxError(item[0])
             else:
