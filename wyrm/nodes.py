@@ -102,8 +102,9 @@ class NodeChildren(Node):
 
 class NodeChildrenIndent(NodeChildren):
     def render(self, *contexts):
+        indentlength = contexts[-1].get('_indentlength', 4)
         for child in self:
-            yield from ((' '*4 + line) for line in child.render(*contexts))
+            yield from ((' '*indentlength + line) for line in child.render(*contexts))
 
 @dataclass
 class RootNode(NodeChildren):
@@ -180,7 +181,8 @@ class HTMLTagNode(NodeChildrenIndent):
         from .htmltag import render as renderTag
         open, close = renderTag(self.name, self.attributes, *contexts)
         contents = list(super().render(*contexts))
-        blankline = (contents and contents[-1] == ' '*4)  # Blank line
+        indentlength = contexts[-1].get('_indentlength', 4)
+        blankline = (contents and contents[-1] == ' '*indentlength)  # Blank line
         if blankline:
             contents.pop()
         if close is None:  # Self-closing tag
@@ -190,7 +192,7 @@ class HTMLTagNode(NodeChildrenIndent):
         elif len(contents) == 0:
             yield open + close
         elif len(contents) == 1:
-            yield open + contents[0][4:] + close
+            yield open + contents[0][indentlength:] + close
         else:
             yield open
             yield from contents
@@ -398,13 +400,14 @@ class HTMLNode(HTMLTagNode):
             elif doctype in ('1', '4'):
                 doctype = ' '.join(doctype, 'strict')
         else:
-            doctype, ix = '5', 0  # To outsource to the config
+            doctype, ix = '', 0
         attributes = makeAttributes(line[ix:])
         return HTMLNode(doctype=doctype, attributes=attributes)
 
     def render(self, *contexts):
         from .htmltag import DOCTYPES
-        yield DOCTYPES[self.doctype]
+        doctype = self.doctype or contexts[-1].get('_doctype', '5')
+        yield DOCTYPES[doctype]
         yield from super().render(*contexts)
 
 @dataclass

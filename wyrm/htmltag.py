@@ -98,18 +98,25 @@ def makeAttributes(line):
 
 def render(name, attributes, *contexts):
     attributes = attributes.evaluate(*contexts)
+    attributes = {attr: (value if isinstance(value, bool) else str(value)) for attr, value in attributes.items()}
     if '_class' in attributes:
         if 'class' in attributes:
             attributes['class'] = ' '.join([attributes['class']] + attributes['_class'])
         else:
             attributes['class'] = ' '.join(attributes['_class'])
         del attributes['_class']
-    attrList = [(f'{attr}={value!r}' if value != True else attr) for attr, value in attributes.items() if value]
+    doboolean = contexts[-1].get('_doboolean', True)
+    if doboolean:
+        booleanattr = lambda attr: attr
+    else:
+        booleanattr = lambda attr: f'{attr}={attr!r}'
+    attrList = [(f'{attr}={value!r}' if value is not True else booleanattr(attr)) for attr, value in attributes.items() if value]
     if attrList:
         open = f'{name} {" ".join(attrList)}'
     else:
         open = name
-    if name in SELF_CLOSING:  # This may be a config option
+    selfclose = contexts[-1].get('_selfclose', True)
+    if name in SELF_CLOSING and selfclose:  # This may be a config option
         return f'<{open} />', None
     else:
         return f'<{open}>', f'</{name}>'

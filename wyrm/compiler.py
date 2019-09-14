@@ -111,7 +111,7 @@ def compile(string):
     indents = [-1]
     nodes = [RootNode()]
     line = []
-    for token in tokenise(string.replace('\t', ' '*4)):
+    for token in tokenise(string):
         if token.type != 'NEWLINE':
             line.append(token)
         else:  # End of line, compile
