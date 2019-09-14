@@ -307,7 +307,7 @@ class WithNode(NodeChildren):
     def render(self, *contexts):
         context = self.vars.evaluate(*contexts)
         if self.limitcontext:
-            yield from super().render(context)
+            yield from super().render(context, contexts[-1])
         else:
             yield from super().render(context, *contexts)
 
@@ -341,7 +341,7 @@ class IncludeNode(NodeChildren):
             _blocks[block.name] = block.render(*contexts)
         context['_blocks'] = _blocks
         if self.limitcontext:
-            yield from template.render(context)
+            yield from template.render(context, contexts[-1])
         else:
             yield from template.render(context, *contexts)
 
