@@ -1,3 +1,18 @@
+'''
+''''''
+==================================== To-do ====================================
+=== Bug-fixes ===
+
+=== Implementation ===
+
+=== Features ===
+CallNode - applies the given function to its rendered lines (not! each line separately)
+String interpolation should escape the inserted strings
+LoadNode? - import libraries
+
+=== Style ===
+'''
+
 from dataclasses import dataclass, field, replace, InitVar
 from typing import Tuple, List, Dict, Optional, ClassVar
 from .expression import Expression, String, VarList, VarDict, AttrDict
@@ -103,8 +118,9 @@ class NodeChildren(Node):
 class NodeChildrenIndent(NodeChildren):
     def render(self, *contexts):
         indentlength = contexts[-1].get('_indentlength', 4)
-        for child in self:
-            yield from ((' '*indentlength + line) for line in child.render(*contexts))
+        for line in super().render(*contexts):
+            line.indent += indentlength
+            yield line
 
 @dataclass
 class RootNode(NodeChildren):
@@ -128,7 +144,7 @@ class TextNode(Node):
             raise TemplateError('text nodes can only take a single token')
 
     def render(self, *contexts):
-        yield self.text.evaluate(*contexts)
+        yield Line(self.text.evaluate(*contexts))
 
 @dataclass
 class CommentNode(NodeChildrenIndent):
@@ -163,11 +179,11 @@ class WyrmCommentNode(CommentNode):
 class HTMLCommentNode(CommentNode):
     def render(self, *contexts):
         if self.comment:
-            yield f'<!-- {self.comment.evaluate(*contexts)} -->'
+            yield Line(f'<!-- {self.comment.evaluate(*contexts)} -->')
         else:
-            yield '<!--'
+            yield Line('<!--')
             yield from super().render(*contexts)
-            yield '-->'
+            yield Line('-->')
 
 @dataclass
 class HTMLTagNode(NodeChildrenIndent):
@@ -184,24 +200,23 @@ class HTMLTagNode(NodeChildrenIndent):
         from .htmltag import render as renderTag
         open, close = renderTag(self.name, self.attributes, *contexts)
         contents = list(super().render(*contexts))
-        indentlength = contexts[-1].get('_indentlength', 4)
-        blankline = (contents and contents[-1] == ' '*indentlength)  # Blank line
+        blankline = (contents and not contents[-1].text)  # Blank line
         if blankline:
             contents.pop()
         if close is None:  # Self-closing tag
             if contents:  # Tag isn't empty
                 raise NodeError('self-closing HTML tags may not have children')
-            yield open
+            yield Line(open)
         elif len(contents) == 0:
-            yield open + close
+            yield Line(open + close)
         elif len(contents) == 1:
-            yield open + contents[0][indentlength:] + close
+            yield Line(open + contents[0].text + close)
         else:
-            yield open
+            yield Line(open)
             yield from contents
-            yield close
+            yield Line(close)
         if blankline:
-            yield ''
+            yield Line('')
 
 @dataclass
 class ExpressionNode(Node):
@@ -214,7 +229,7 @@ class ExpressionNode(Node):
     def render(self, *contexts):
         expr = str(self.expr.evaluate(*contexts))
         if expr:
-            yield expr
+            yield Line(expr)
 
 # Control nodes
 @dataclass
@@ -410,7 +425,7 @@ class HTMLNode(HTMLTagNode):
     def render(self, *contexts):
         from .htmltag import DOCTYPES
         doctype = self.doctype or contexts[-1].get('_doctype', '5')
-        yield DOCTYPES[doctype]
+        yield Line(DOCTYPES[doctype])
         yield from super().render(*contexts)
 
 @dataclass
@@ -447,7 +462,7 @@ class TagResourceNode(ResourceNode, HTMLTagNode):
         if self.src is None:
             yield from super().render(*contexts)
         else:
-            yield self.sourcetag.format(self.src.evaluate(*contexts))
+            yield Line(self.sourcetag.format(self.src.evaluate(*contexts)))
 
 @dataclass
 class CSSNode(TagResourceNode):
@@ -464,12 +479,20 @@ class MarkdownNode(ResourceNode):
     def render(self, *contexts):
         from .template import load_file
         if self.src is None:
-            string = '\n'.join(super().render(*contexts))
+            string = '\n'.join(line.text for line in super().render(*contexts))
         else:
             string = load_file(self.src.evaluate(*contexts), '.md')
         yield from markdown(string).splitlines()
 
 ## Helper Classes
+@dataclass
+class Line:
+    text: str = ''
+    indent: int = 0
+
+    def __str__(self):
+        return f'{' '*self.indent}{self.text}'
+
 @dataclass
 class LoopVars:
     length: InitVar[int]
